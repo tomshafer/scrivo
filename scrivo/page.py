@@ -14,8 +14,6 @@ from markdown import Markdown
 
 from scrivo.markdown import YAMLMetadataExtension
 
-logger = logging.getLogger(__name__)
-
 
 # This is the entire configuration of the Markdown parser
 _md_parser = Markdown(
@@ -78,7 +76,7 @@ def check_metadata(meta: Dict) -> Dict[str, Any]:
     # Warn about invalid metadata
     invalid = provided_meta.difference(ACCEPTABLE_METADATA)
     for key in invalid:
-        logger.warning('metadata key "%s" will not be parsed', key)
+        logging.warning('metadata key "%s" will not be parsed', key)
     # Assign with defaults
     return dict(
         title=meta['title'] if 'title' in meta else None,
