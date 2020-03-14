@@ -56,13 +56,29 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
         p for p in pages
         if p.website_path.find('blog/') != -1
         and not p.meta['draft']
+        and not p.slug.endswith('index')
     ), key=lambda p: p.date, reverse=True)
+
     with open(os.path.join(config.site.build_dir, 'blog', 'index.html'), 'w') as f:
         f.write(blog.render_index_page(
             posts=blogs,
             template=templates.get_template(config.templates.blog.home)))
+
+    template = templates.get_template(config.templates.blog.archives)
+    for year in set(b.date.year for b in blogs):
+        year_blogs = [b for b in blogs if b.date.year == year]
+        url = os.path.join(config.site.build_dir, f'blog/{year:04d}/index.html')
+        with open(url, 'w') as f:
+            f.write(blog.render_archives_page(year_blogs, template, year=year))
+        for month in set(b.date.month for b in year_blogs):
+            month_blogs = [b for b in year_blogs if b.date.month == month]
+            url = os.path.join(config.site.build_dir, f'blog/{year:04d}/{month:02d}/index.html')
+            with open(url, 'w') as f:
+                f.write(blog.render_archives_page(month_blogs, template, year=year, month=month))
+
     with open(os.path.join(config.site.build_dir, 'blog', 'feed.json'), 'w') as f:
         f.write(templates.get_template(config.templates.feeds.json).render(posts=blogs))
+
     with open(os.path.join(config.site.build_dir, 'blog', 'rss.xml'), 'w') as f:
         f.write(templates.get_template(config.templates.feeds.rss).render(
             posts=blogs, build_date=datetime.now()))
