@@ -1,27 +1,22 @@
+"""
+Compile a static site from Markdown files.
+"""
 import os
 from datetime import datetime
-from typing import List, Iterable
+from typing import Iterable, List
 
 from scrivo import blog
 from scrivo.config import Config
-from scrivo.page import Page
-from scrivo.template import load_from_directory
+from scrivo.page import Page, load_templates_from_dir
 
 
-def compile(source_dir: str, build_dir: str, config: Config) -> None:
+def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
     """
     Build a website from source.
 
-    Parameters
-    ----------
-    source_dir : str
-        Directory containing source files. This will be mirrored to build_dir.
-    build_dir : str
-        Directory in which to write output files.
-
-    Returns
-    -------
-    None
+    Args:
+        source_dir (str): directory containing source files
+        build_dir (str): directory in which to write output files
 
     """
     if not os.path.isdir(source_dir):
@@ -29,7 +24,7 @@ def compile(source_dir: str, build_dir: str, config: Config) -> None:
     if not os.path.isdir(build_dir):
         raise FileNotFoundError(f'build directoy {build_dir} does not exist')
 
-    templates = load_from_directory(config.templates.source_dir)
+    templates = load_templates_from_dir(config.templates.source_dir)
     page_paths = find_pages(source_dir)
 
     # Render pages in-place
@@ -49,7 +44,7 @@ def compile(source_dir: str, build_dir: str, config: Config) -> None:
             config.templates.default
             if not page.meta['template']
             else page.meta['template'])
-        # fixme: this is awful
+        # FIXME: this is awful
         if page.website_path.find('blog/2') != -1:
             template = templates.get_template(config.templates.blog.default)
         with open(dest, 'w', encoding='utf-8') as fh:
@@ -60,6 +55,7 @@ def compile(source_dir: str, build_dir: str, config: Config) -> None:
     blogs = sorted((
         p for p in pages
         if p.website_path.find('blog/') != -1
+        and not p.meta['draft']
     ), key=lambda p: p.date, reverse=True)
     with open(os.path.join(config.site.build_dir, 'blog', 'index.html'), 'w') as f:
         f.write(blog.render_index_page(
@@ -82,7 +78,7 @@ def find_pages(directory: str, exts: Iterable[str] = ('md',)) -> List[str]:
         exts (iterable): file extensions to search for
 
     Returns:
-        list: a collection of pages to be considered for processing
+        a collection of pages to be considered for processing
 
     """
     return [

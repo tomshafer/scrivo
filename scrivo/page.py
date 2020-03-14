@@ -2,15 +2,15 @@
 A Page represents a single web document, originating in Markdown
 and to be rendered as HTML.
 """
-import os
+import json
 import logging
+import os
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple, TypeVar
 
 from dateparser import parse as parse_date
-from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader, Template
 from markdown import Markdown
-import json
 
 from scrivo.markdown import YAMLMetadataExtension
 
@@ -171,3 +171,9 @@ class Page:
     @property
     def escaped_html(self) -> str:
         return json.dumps(self.html)
+
+
+# Load templates
+def load_templates_from_dir(directory: str) -> Environment:
+    """Produce an Environment targeted at a directory."""
+    return Environment(loader=FileSystemLoader(directory))  # nosec

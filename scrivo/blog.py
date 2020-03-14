@@ -13,6 +13,7 @@ To consider:
 from typing import Iterable
 
 from jinja2 import Template
+
 from scrivo.page import Page
 
 
@@ -27,9 +28,11 @@ def render_index_page(posts: Posts, template: Template) -> str:
 
 def render_tags_page(posts: Posts, template: Template) -> str:
     """Render a blog tags page according to a template."""
+    raise NotImplementedError
     return ''
 
 
 def render_archives_page(posts: Posts, template: Template) -> str:
     """Render a blog archives page according to a template."""
+    raise NotImplementedError
     return ''

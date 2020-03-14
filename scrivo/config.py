@@ -1,14 +1,11 @@
-"""Utilities for working with config files."""
+"""Parse YAML configuration files."""
 import os
 from typing import Any, Dict, NamedTuple
 
 from yaml import safe_load
 
 
-# ----------------------------------------------------------------------------
-# These enforce types on the config files
-# ----------------------------------------------------------------------------
-
+# Enforce types on the config files
 class SiteConfig(NamedTuple):
     """Site YAML sub-configuration options."""
     url: str
@@ -44,10 +41,8 @@ class Config(NamedTuple):
     templates: TemplatesConfig
 
 
-# ----------------------------------------------------------------------------
 # Apply the NamedTuples to config.yml
-# ----------------------------------------------------------------------------
-
+# FIXME: Handle missing keys in the config file
 def read_config(path: str) -> Config:
     """Read in YAML configurations."""
     if not os.path.exists(path):

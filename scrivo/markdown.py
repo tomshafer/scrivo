@@ -1,10 +1,14 @@
-"""Custom Markdown extension for YAML metadata parsing."""
+"""
+Custom Markdown extension for YAML metadata parsing.
+"""
+import logging
+import re
+from typing import Any, Dict, List
+
+import yaml
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-import logging
-import yaml
-from typing import List, Dict, Any
-import re
+
 logger = logging.getLogger()
 
 
@@ -26,8 +30,8 @@ class YAMLMetadataPreprocessor(Preprocessor):
         Returns:
             list[str]: the original Markdown minus the YAML content
 
-        NB: This also has side-effects, setting 'self.md.metadata' to the
-        extracted YAML content.
+            NB: This also has side-effects, setting 'self.md.metadata' to the
+            extracted YAML content.
 
         """
         RE_YAML = re.compile(r'^(-|\.){3}$')
