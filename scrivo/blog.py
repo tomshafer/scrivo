@@ -10,26 +10,18 @@ To consider:
 - Sentiment analysis
 
 """
-from typing import Iterable, Optional
+from collections import OrderedDict, defaultdict
 from datetime import datetime
-from jinja2 import Template
+from typing import DefaultDict, Iterable, List, Optional
+
 from dateparser import parse as parse_date
+from jinja2 import Template
+
 from scrivo.page import Page
 
 
 # For typing
 Posts = Iterable[Page]
-
-
-def render_index_page(posts: Posts, template: Template) -> str:
-    """Render a blog index page according to a template."""
-    return template.render(posts=posts)
-
-
-def render_tags_page(posts: Posts, template: Template) -> str:
-    """Render a blog tags page according to a template."""
-    raise NotImplementedError
-    return ''
 
 
 def render_archives_page(
@@ -62,3 +54,29 @@ def render_archives_page(
         posts=sorted(posts, key=lambda p: p.date),
         archive_title=archive_date,
         date_format=date_format)
+
+
+def render_tags_page(posts: Posts, template: Template) -> str:
+    """Render blog archived by tag.
+
+    Args:
+        posts (Posts): a collection of blog posts
+        template: a Jinja2 template
+
+    Returns:
+        a rendered document with blogs organized by tag
+
+    """
+    tagged_posts: DefaultDict[str, List[Page]] = defaultdict(lambda: [])
+    for post in sorted(posts, key=lambda p: p.date, reverse=True):
+        if post.meta['tags']:
+            for tag in post.meta['tags']:
+                tagged_posts[tag] += [post]
+        else:
+            tagged_posts['untagged'] += [post]
+    # Hack to re-sort untagged to the bottom
+    out = OrderedDict()
+    for k in sorted(set(tagged_posts).difference({'untagged'})):
+        out[k] = tagged_posts[k]
+    out['untagged'] = tagged_posts['untagged']
+    return template.render(tags=out)

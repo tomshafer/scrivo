@@ -34,7 +34,8 @@ _md_parser = Markdown(
             'BACKLINK_TEXT': '&#8617;&#xfe0e;'
         },
         'markdown.extensions.codehilite': {
-            'use_pygments': True
+            'use_pygments': True,
+            'guess_lang': False
         },
         'mdx_math': {
             'enable_dollar_delimiter': True
@@ -168,6 +169,7 @@ class Page:
 
     @property
     def escaped_html(self) -> str:
+        """Return escaped HTML for JSON feed."""
         return json.dumps(self.html)
 
 

@@ -5,85 +5,9 @@ import os
 from datetime import datetime
 from typing import Iterable, List
 
-from scrivo import blog
+from scrivo.blog import render_archives_page, render_tags_page
 from scrivo.config import Config
 from scrivo.page import Page, load_templates_from_dir
-
-
-def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
-    """
-    Build a website from source.
-
-    Args:
-        source_dir (str): directory containing source files
-        build_dir (str): directory in which to write output files
-
-    """
-    if not os.path.isdir(source_dir):
-        raise FileNotFoundError(f'source directoy {source_dir} does not exist')
-    if not os.path.isdir(build_dir):
-        raise FileNotFoundError(f'build directoy {build_dir} does not exist')
-
-    templates = load_templates_from_dir(config.templates.source_dir)
-    page_paths = find_pages(source_dir)
-
-    # Render pages in-place
-    pages: List[Page] = []
-    for path in page_paths:
-        with open(path, 'r') as f:
-            page = Page(
-                source=f.read(),
-                website_path=os.path.relpath(path, source_dir))
-            pages += [page]
-        # Destination paths
-        dest = os.path.join(config.site.build_dir, page.url)
-        if not os.path.exists(os.path.dirname(dest)):
-            os.makedirs(os.path.dirname(dest))
-        # Template
-        template = templates.get_template(
-            config.templates.default
-            if not page.meta['template']
-            else page.meta['template'])
-        # FIXME: this is awful
-        if page.website_path.find('blog/2') != -1:
-            template = templates.get_template(config.templates.blog.default)
-        with open(dest, 'w', encoding='utf-8') as fh:
-            fh.write(page.render(template))
-
-    # Render blogs to index, archive, etc.
-    # These are weird b/c they take in collections of pages
-    blogs = sorted((
-        p for p in pages
-        if p.website_path.find('blog/') != -1
-        and not p.meta['draft']
-        and not p.slug.endswith('index')
-    ), key=lambda p: p.date, reverse=True)
-
-    with open(os.path.join(config.site.build_dir, 'blog', 'index.html'), 'w') as f:
-        f.write(blog.render_index_page(
-            posts=blogs,
-            template=templates.get_template(config.templates.blog.home)))
-
-    template = templates.get_template(config.templates.blog.archives)
-    for year in set(b.date.year for b in blogs):
-        year_blogs = [b for b in blogs if b.date.year == year]
-        url = os.path.join(config.site.build_dir, f'blog/{year:04d}/index.html')
-        with open(url, 'w') as f:
-            f.write(blog.render_archives_page(year_blogs, template, year=year))
-        for month in set(b.date.month for b in year_blogs):
-            month_blogs = [b for b in year_blogs if b.date.month == month]
-            url = os.path.join(config.site.build_dir, f'blog/{year:04d}/{month:02d}/index.html')
-            with open(url, 'w') as f:
-                f.write(blog.render_archives_page(month_blogs, template, year=year, month=month))
-
-    with open(os.path.join(config.site.build_dir, 'blog', 'feed.json'), 'w') as f:
-        f.write(templates.get_template(config.templates.feeds.json).render(posts=blogs))
-
-    with open(os.path.join(config.site.build_dir, 'blog', 'rss.xml'), 'w') as f:
-        f.write(templates.get_template(config.templates.feeds.rss).render(
-            posts=blogs, build_date=datetime.now()))
-
-    # todo: tags, archives, etc.
 
 
 def find_pages(directory: str, exts: Iterable[str] = ('md',)) -> List[str]:
@@ -103,3 +27,92 @@ def find_pages(directory: str, exts: Iterable[str] = ('md',)) -> List[str]:
         for file in files
         if file.endswith(tuple(exts))
     ]
+
+
+def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
+    """
+    Build a website from source.
+
+    Args:
+        source_dir (str): directory containing source files
+        build_dir (str): directory in which to write output files
+
+    """
+    if not os.path.isdir(source_dir):
+        raise FileNotFoundError(f'source directoy {source_dir} does not exist')
+    if not os.path.isdir(build_dir):
+        raise FileNotFoundError(f'build directoy {build_dir} does not exist')
+
+    templates = load_templates_from_dir(config.templates.source_dir)
+
+    blogs: List[Page] = []
+    for path in find_pages(source_dir):
+        with open(path, 'r') as f:
+            page = Page(source=f.read(),
+                        website_path=os.path.relpath(path, source_dir))
+        # Track blogs
+        if page.website_path.startswith('blog/'):
+            blogs += [page]
+        # Think through a better way to do this
+        if page.meta['template']:
+            template = templates.get_template(page.meta['template'])
+        elif page.website_path.startswith('blog/'):
+            template = templates.get_template(config.templates.blog.default)
+        else:
+            template = templates.get_template(config.templates.default)
+        # Destination paths
+        dest = os.path.join(config.site.build_dir, page.url)
+        if not os.path.exists(os.path.dirname(dest)):
+            os.makedirs(os.path.dirname(dest))
+        # Rendering
+        with open(dest, 'w', encoding='utf-8') as fh:
+            fh.write(page.render(template))
+
+    # Blogs get their own collection
+    blogs = sorted((b for b in blogs if not b.meta['draft']),
+                   key=lambda p: p.date, reverse=True)
+
+    # Index page
+    with open(os.path.join(config.site.build_dir, 'blog/index.html'), 'w') as f:
+        template = templates.get_template(config.templates.blog.home)
+        f.write(template.render(posts=blogs, template=template))
+
+    # Archive pages
+    template = templates.get_template(config.templates.blog.archives)
+
+    # Main archive
+    url = os.path.join(config.site.build_dir, f'blog/archive/index.html')
+    if not os.path.exists(url):
+        os.makedirs(os.path.dirname(url))
+    with open(url, 'w') as f:
+        f.write(render_archives_page(blogs, template))
+
+    # Year and month archives
+    for year in set(b.date.year for b in blogs):
+        year_blogs = [b for b in blogs if b.date.year == year]
+        url = os.path.join(config.site.build_dir, f'blog/{year:04d}/index.html')
+        with open(url, 'w') as f:
+            f.write(render_archives_page(year_blogs, template, year=year))
+        for month in set(b.date.month for b in year_blogs):
+            month_blogs = [b for b in year_blogs if b.date.month == month]
+            url = os.path.join(config.site.build_dir, f'blog/{year:04d}/{month:02d}/index.html')
+            with open(url, 'w') as f:
+                f.write(render_archives_page(month_blogs, template, year=year, month=month))
+
+    # Tags page
+    url = os.path.join(config.site.build_dir, 'blog/tags/index.html')
+    if not os.path.exists(url):
+        os.makedirs(os.path.dirname(url))
+    with open(url, 'w') as f:
+        template = templates.get_template(config.templates.blog.tags)
+        f.write(render_tags_page(posts=blogs, template=template))
+
+    # JSON feed
+    with open(os.path.join(config.site.build_dir, 'blog', 'feed.json'), 'w') as f:
+        template = templates.get_template(config.templates.feeds.json)
+        f.write(template.render(posts=blogs))
+
+    # RSS feed
+    with open(os.path.join(config.site.build_dir, 'blog', 'rss.xml'), 'w') as f:
+        template = templates.get_template(config.templates.feeds.rss)
+        f.write(template.render(posts=blogs, build_date=datetime.now()))
