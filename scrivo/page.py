@@ -18,6 +18,7 @@ from scrivo.markdown import YAMLMetadataExtension
 # This is the entire configuration of the Markdown parser
 _md_parser = Markdown(
     output_format='html5',
+    tab_length=2,
     extensions=[
         'markdown.extensions.fenced_code',
         'markdown.extensions.footnotes',

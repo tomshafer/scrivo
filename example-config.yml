@@ -15,3 +15,5 @@ templates:
   feeds:
     rss: rss.xml
     json: feed.json
+
+build_count_file: .scrivo-count

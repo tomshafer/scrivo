@@ -10,6 +10,18 @@ from scrivo.config import Config
 from scrivo.page import Page, load_templates_from_dir
 
 
+def increment_counter(dest: str) -> None:
+    """Increment a Siracusa-style process counter."""
+    mode = 'r+' if os.path.exists(dest) else 'a+'
+    with open(dest, mode) as f:
+        contents = f.read()
+        count = int(contents) if contents else 0
+        f.seek(0)
+        f.write(str(count + 1) + '\n')
+        # From SO -- need this to get correct behavior
+        f.truncate()
+
+
 def find_pages(directory: str, exts: Iterable[str] = ('md',)) -> List[str]:
     """Return a list of source paths within a top-level directory.
 
@@ -116,3 +128,10 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
     with open(os.path.join(config.site.build_dir, 'blog', 'rss.xml'), 'w') as f:
         template = templates.get_template(config.templates.feeds.rss)
         f.write(template.render(posts=blogs, build_date=datetime.now()))
+
+    # Conly count full builds; here at the end
+    if config.build_count_file is not None:
+        path = os.path.join(
+            config.site.source_dir,
+            os.path.basename(config.build_count_file))
+        increment_counter(path)

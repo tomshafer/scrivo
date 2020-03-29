@@ -1,6 +1,6 @@
 """Parse YAML configuration files."""
 import os
-from typing import Any, Dict, NamedTuple
+from typing import Any, Dict, NamedTuple, Optional
 
 from yaml import safe_load
 
@@ -12,7 +12,6 @@ class SiteConfig(NamedTuple):
     source_dir: str
     build_dir: str
 
-
 class BlogTemplatesConfig(NamedTuple):
     """Templates YAML sub-configuration options for blog components."""
     default: str
@@ -20,12 +19,10 @@ class BlogTemplatesConfig(NamedTuple):
     archives: str
     tags: str
 
-
 class FeedTemplatesConfig(NamedTuple):
     """Templates YAML sub-configuration options for feeds."""
     rss: str
     json: str
-
 
 class TemplatesConfig(NamedTuple):
     """Templates YAML sub-configuration options."""
@@ -34,11 +31,11 @@ class TemplatesConfig(NamedTuple):
     blog: BlogTemplatesConfig
     feeds: FeedTemplatesConfig
 
-
 class Config(NamedTuple):
     """Site YAML configuration options."""
     site: SiteConfig
     templates: TemplatesConfig
+    build_count_file: Optional[str]
 
 
 # Apply the NamedTuples to config.yml
@@ -68,5 +65,6 @@ def read_config(path: str) -> Config:
                 rss=yaml['templates']['feeds']['rss'],
                 json=yaml['templates']['feeds']['json']
             )
-        )
+        ),
+        build_count_file=yaml['build_count_file']
     )
