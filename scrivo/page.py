@@ -25,6 +25,7 @@ _md_parser = Markdown(
         'markdown.extensions.tables',
         'markdown.extensions.codehilite',
         'markdown.extensions.smarty',
+        'markdown.extensions.toc',
         'mdx_math',
         YAMLMetadataExtension()
     ],
@@ -139,7 +140,7 @@ class Page:
             content=self.html,
             slug=self.slug,
             url=self.url,
-            topdir=self.topdir,
+            topdir=self.rootdir,
             escaped_html=self.escaped_html,
             **self.meta)
 
@@ -161,12 +162,10 @@ class Page:
         return parse_date(self._default_date)
 
     @property
-    def topdir(self) -> str:
-        """Return the first entry of the path."""
+    def rootdir(self) -> str:
+        """Return the "root" to return to."""
         dirname = os.path.dirname(self.website_path)
-        if not dirname:
-            return dirname
-        return dirname.split(os.path.sep)[0]
+        return dirname
 
     @property
     def escaped_html(self) -> str:
