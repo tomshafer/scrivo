@@ -4,10 +4,15 @@ Compile a static site from Markdown files.
 import os
 from datetime import datetime
 from typing import Iterable, List
+import logging
 
 from scrivo.blog import render_archives_page, render_tags_page
 from scrivo.config import Config
 from scrivo.page import Page, load_templates_from_dir
+
+
+logger = logging.getLogger(__name__)
+
 
 
 def increment_counter(dest: str) -> None:
@@ -41,6 +46,40 @@ def find_pages(directory: str, exts: Iterable[str] = ('md',)) -> List[str]:
     ]
 
 
+def symlink_background(source: str, dest: str) -> None:
+    """
+    """
+    HIDDEN_PREFIXES = ('_', '.')
+    HIDDEN_SUFFIXES = ('.md', '.draft')
+    for pwd, _, files in os.walk(source):
+        relpwd = os.path.relpath(pwd, source)
+
+        hidden = any(p.startswith(HIDDEN_PREFIXES) for p in relpwd.split(os.path.sep))
+        if hidden:
+            continue
+
+        files = [
+            f for f in files
+            if not f.startswith(HIDDEN_PREFIXES)
+            and not f.endswith(HIDDEN_SUFFIXES)
+        ]
+        if not files:
+            continue
+
+        dest_dir = os.path.join(dest, relpwd)
+        os.makedirs(dest_dir, exist_ok=True)
+
+        # TODO: Check for dead links?
+        for f in files:
+            src_link = os.path.abspath(os.path.join(pwd, f))
+            dest_link = os.path.abspath(os.path.join(dest_dir, f))
+            if os.path.exists(dest_link):
+                if not os.path.islink(dest_link):
+                    logger.warning("path %s exists but isn't already a link", dest_link)
+                continue
+            os.symlink(src_link, dest_link)
+
+
 def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
     """
     Build a website from source.
@@ -55,9 +94,11 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
     if not os.path.isdir(build_dir):
         raise FileNotFoundError(f'build directoy {build_dir} does not exist')
 
-    templates = load_templates_from_dir(config.templates.source_dir)
+    symlink_background(source_dir, build_dir)
 
     blogs: List[Page] = []
+    templates = load_templates_from_dir(config.templates.source_dir)
+
     for path in find_pages(source_dir):
         with open(path, 'r') as f:
             page = Page(source=f.read(),

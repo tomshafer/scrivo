@@ -3,8 +3,9 @@
 
 ## To do
 
-- [ ] Create command-line implementation
+- [ ] Add "clear all" functionality on regenerate
+- [ ] Add timings
 - [ ] Reorganize the internal structure
-- [ ] Build yearly and monthly archive pages
-- [ ] Build overall archive page
-- [ ] Build tags page
+- [ ] Add "info" logging
+- [ ] Add rsync tool
+- [ ] Update config?

@@ -81,9 +81,13 @@ def check_metadata(meta: Dict) -> Dict[str, Any]:
     for key in invalid:
         logging.warning('metadata key "%s" will not be parsed', key)
     # Assign with defaults
+    # TODO: wrap as a function
     return dict(
         title=meta['title'] if 'title' in meta else None,
-        date=parse_date(meta['date']) if 'date' in meta else None,
+        date=parse_date(meta['date'], settings={
+            'TIMEZONE': 'US/Eastern',
+            'RETURN_AS_TIMEZONE_AWARE': True
+        }) if 'date' in meta else None,
         tags=list(meta['tags']) if 'tags' in meta else [],
         draft=bool(meta['draft']) if 'draft' in meta else False,
         template=meta['template'] if 'template' in meta else None,
