@@ -1,6 +1,7 @@
-from setuptools import setup, find_packages
+"""Package setup."""
+from setuptools import find_packages, setup
 
-with open('README.md', 'r') as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
@@ -18,11 +19,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
-    install_requires=[
-        'dateparser',
-        'jinja2',
-        'markdown',
-        'python-markdown-math'
-    ]
+    python_requires=">=3.6",
+    install_requires=["dateparser", "jinja2", "markdown", "python-markdown-math"],
 )

@@ -1,6 +1,6 @@
-"""
-A Page represents a single web document, originating in Markdown
-and to be rendered as HTML.
+"""A Page represents a single web document.
+
+Pages originate in Markdown and are to be rendered as HTML.
 """
 import json
 import logging
@@ -14,35 +14,30 @@ from markdown import Markdown
 
 from scrivo.markdown import YAMLMetadataExtension
 
-
 # This is the entire configuration of the Markdown parser
 _md_parser = Markdown(
-    output_format='html5',
+    output_format="html5",
     tab_length=2,
     extensions=[
-        'markdown.extensions.fenced_code',
-        'markdown.extensions.footnotes',
-        'markdown.extensions.tables',
-        'markdown.extensions.codehilite',
-        'markdown.extensions.smarty',
-        'markdown.extensions.toc',
-        'mdx_math',
-        YAMLMetadataExtension()
+        "markdown.extensions.fenced_code",
+        "markdown.extensions.footnotes",
+        "markdown.extensions.tables",
+        "markdown.extensions.codehilite",
+        "markdown.extensions.smarty",
+        "markdown.extensions.toc",
+        "mdx_math",
+        YAMLMetadataExtension(),
     ],
     extension_configs={
-        'markdown.extensions.footnotes': {
-            'UNIQUE_IDS': True,
+        "markdown.extensions.footnotes": {
+            "UNIQUE_IDS": True,
             # https://github.com/jekyll/jekyll/issues/3751#issue-83081590
-            'BACKLINK_TEXT': '&#8617;&#xfe0e;'
+            "BACKLINK_TEXT": "&#8617;&#xfe0e;",
         },
-        'markdown.extensions.codehilite': {
-            'use_pygments': True,
-            'guess_lang': False
-        },
-        'mdx_math': {
-            'enable_dollar_delimiter': True
-        }
-    })
+        "markdown.extensions.codehilite": {"use_pygments": True, "guess_lang": False},
+        "mdx_math": {"enable_dollar_delimiter": True},
+    },
+)
 
 
 def parse_markdown(source: str) -> Tuple[str, Dict]:
@@ -74,7 +69,7 @@ def check_metadata(meta: Dict) -> Dict[str, Any]:
         dict(str, Any): a dict of cleaned metadata entries
 
     """
-    ACCEPTABLE_METADATA = {'title', 'date', 'tags', 'draft', 'template', 'heading'}
+    ACCEPTABLE_METADATA = {"title", "date", "tags", "draft", "template", "heading"}
     provided_meta = set(meta.keys())
     # Warn about invalid metadata
     invalid = provided_meta.difference(ACCEPTABLE_METADATA)
@@ -82,21 +77,23 @@ def check_metadata(meta: Dict) -> Dict[str, Any]:
         logging.warning('metadata key "%s" will not be parsed', key)
     # Assign with defaults
     # TODO: wrap as a function
-    return dict(
-        title=meta['title'] if 'title' in meta else None,
-        date=parse_date(meta['date'], settings={
-            'TIMEZONE': 'US/Eastern',
-            'RETURN_AS_TIMEZONE_AWARE': True
-        }) if 'date' in meta else None,
-        tags=list(meta['tags']) if 'tags' in meta else [],
-        draft=bool(meta['draft']) if 'draft' in meta else False,
-        template=meta['template'] if 'template' in meta else None,
-        heading=meta['heading'] if 'heading' in meta else None
-    )
+    return {
+        "title": meta["title"] if "title" in meta else None,
+        "date": parse_date(
+            meta["date"],
+            settings={"TIMEZONE": "US/Eastern", "RETURN_AS_TIMEZONE_AWARE": True},
+        )
+        if "date" in meta
+        else None,
+        "tags": list(meta["tags"]) if "tags" in meta else [],
+        "draft": bool(meta["draft"]) if "draft" in meta else False,
+        "template": meta["template"] if "template" in meta else None,
+        "heading": meta["heading"] if "heading" in meta else None,
+    }
 
 
 # This TypeVar allows us to type hint a class method
-T = TypeVar('T', bound='Page')
+T = TypeVar("T", bound="Page")
 
 
 class Page:
@@ -111,9 +108,11 @@ class Page:
         (none)
 
     """
-    _default_date = '2001-01-01'
+
+    _default_date = "2001-01-01"
 
     def __init__(self, source: str, website_path: str) -> None:
+        """A Page is created from a source and with a path."""
         self.source = source
         self.website_path = website_path
 
@@ -122,7 +121,8 @@ class Page:
         self.meta = check_metadata(meta)
 
     def __repr__(self) -> str:
-        return f'Page({self.website_path})'
+        """String representation of a Page."""
+        return f"Page({self.website_path})"
 
     def render(self, template: Optional[Template] = None) -> str:
         """Return a rendered page as a string.
@@ -146,12 +146,13 @@ class Page:
             url=self.url,
             topdir=self.rootdir,
             escaped_html=self.escaped_html,
-            **self.meta)
+            **self.meta,
+        )
 
     @property
     def url(self) -> str:
         """Return the HTML-extension URL for the page."""
-        return self.slug + '.html'
+        return self.slug + ".html"
 
     @property
     def slug(self) -> str:
@@ -161,8 +162,8 @@ class Page:
     @property
     def date(self) -> datetime:
         """Return a datetime object."""
-        if self.meta['date']:
-            return self.meta['date']
+        if self.meta["date"]:
+            return self.meta["date"]
         return parse_date(self._default_date)
 
     @property
@@ -180,4 +181,4 @@ class Page:
 # Load templates
 def load_templates_from_dir(directory: str) -> Environment:
     """Produce an Environment targeted at a directory."""
-    return Environment(loader=FileSystemLoader(directory))  # nosec
+    return Environment(loader=FileSystemLoader(directory))  # noqa: S701

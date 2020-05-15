@@ -1,5 +1,4 @@
-"""
-Blog-specific utilities.
+"""Blog-specific utilities.
 
 To consider:
 
@@ -19,16 +18,15 @@ from jinja2 import Template
 
 from scrivo.page import Page
 
-
 # For typing
 Posts = Iterable[Page]
 
 
 def render_archives_page(
-        posts: Posts,
-        template: Template,
-        year: Optional[int] = None,
-        month: Optional[int] = None
+    posts: Posts,
+    template: Template,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
 ) -> str:
     """Render a blog archives page according to a template.
 
@@ -40,20 +38,21 @@ def render_archives_page(
 
     """
     archive_date: Optional[datetime] = None
-    date_format: str = '%B %d, %Y'
+    date_format: str = "%B %d, %Y"
     if year is not None:
-        archive_str = f'{year:04d}'
+        archive_str = f"{year:04d}"
         if month is not None:
-            archive_str += f'-{month:02d}-01'
-            archive_date = parse_date(archive_str).strftime('%B %Y')
+            archive_str += f"-{month:02d}-01"
+            archive_date = parse_date(archive_str).strftime("%B %Y")
         else:
-            date_format = '%B %Y'
-            archive_str += '-01-01'
-            archive_date = parse_date(archive_str).strftime('%Y')
+            date_format = "%B %Y"
+            archive_str += "-01-01"
+            archive_date = parse_date(archive_str).strftime("%Y")
     return template.render(
         posts=sorted(posts, key=lambda p: p.date),
         archive_title=archive_date,
-        date_format=date_format)
+        date_format=date_format,
+    )
 
 
 def render_tags_page(posts: Posts, template: Template) -> str:
@@ -69,14 +68,14 @@ def render_tags_page(posts: Posts, template: Template) -> str:
     """
     tagged_posts: DefaultDict[str, List[Page]] = defaultdict(lambda: [])
     for post in sorted(posts, key=lambda p: p.date, reverse=True):
-        if post.meta['tags']:
-            for tag in post.meta['tags']:
+        if post.meta["tags"]:
+            for tag in post.meta["tags"]:
                 tagged_posts[tag] += [post]
         else:
-            tagged_posts['untagged'] += [post]
+            tagged_posts["untagged"] += [post]
     # Hack to re-sort untagged to the bottom
     out = OrderedDict()
-    for k in sorted(set(tagged_posts).difference({'untagged'})):
+    for k in sorted(set(tagged_posts).difference({"untagged"})):
         out[k] = tagged_posts[k]
-    out['untagged'] = tagged_posts['untagged']
+    out["untagged"] = tagged_posts["untagged"]
     return template.render(tags=out)

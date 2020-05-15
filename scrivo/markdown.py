@@ -1,6 +1,4 @@
-"""
-Custom Markdown extension for YAML metadata parsing.
-"""
+"""Custom Markdown extension for YAML metadata parsing."""
 import logging
 import re
 from typing import Any, Dict, List
@@ -13,14 +11,16 @@ logger = logging.getLogger()
 
 
 class YAMLMetadataExtension(Extension):
-    """Parse YAML metadata at the top of a Markdown document"""
+    """Parse YAML metadata at the top of a Markdown document."""
+
     def extendMarkdown(self, md):
-        # Register our metadata preprocessor at the lower priority
-        md.preprocessors.register(YAMLMetadataPreprocessor(md), 'yaml', 1)
+        """Register our metadata preprocessor at the lower priority."""
+        md.preprocessors.register(YAMLMetadataPreprocessor(md), "yaml", 1)
 
 
 class YAMLMetadataPreprocessor(Preprocessor):
     """Parse YAML metadata at the top of a Markdown document."""
+
     def run(self, lines: List[str]) -> List[str]:
         """Run the Preprocessor to extract any YAML block.
 
@@ -34,7 +34,7 @@ class YAMLMetadataPreprocessor(Preprocessor):
             extracted YAML content.
 
         """
-        RE_YAML = re.compile(r'^(-|\.){3}$')
+        RE_YAML = re.compile(r"^(-|\.){3}$")
 
         yaml_start, yaml_end = None, None
         for i, line in enumerate(lines):
@@ -57,10 +57,10 @@ class YAMLMetadataPreprocessor(Preprocessor):
         if yaml_start is None and yaml_end is None:
             new_lines = lines
         elif yaml_start is not None and yaml_end is not None:
-            new_lines = lines[yaml_end+1:]
-            metadata = yaml.safe_load('\n'.join(lines[yaml_start+1:yaml_end]))
+            new_lines = lines[(yaml_end + 1):]
+            metadata = yaml.safe_load("\n".join(lines[(yaml_start + 1):yaml_end]))
         else:
-            raise ValueError('did not find the end of the YAML header block')
+            raise ValueError("did not find the end of the YAML header block")
 
         # lowercase the keys
         self.md.metadata = {k.lower(): v for k, v in metadata.items()}
