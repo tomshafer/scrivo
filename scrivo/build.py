@@ -4,20 +4,14 @@ import os
 from datetime import datetime
 from typing import Iterable, List
 
+from jinja2 import Environment
+
 from scrivo.blog import render_archives_page, render_tags_page
 from scrivo.config import Config
 from scrivo.page import Page, load_templates_from_dir
 
-# cf: https://docs.python.org/3/howto/logging.html
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter(
-    fmt="{name} {levelname:<8s} {funcName} :: {message}", style="{"
-)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
 
 
 def increment_counter(dest: str) -> None:
@@ -102,6 +96,31 @@ def symlink_directory(
             os.symlink(src_link, dest_link)
 
 
+def render_markdown_pages(pages: List[Page], tmpls: Environment, cfg: Config) -> None:
+    """Render the standard collection on Markdown pages (not the generated ones).
+
+    Args:
+        pages (list[Page]): the pages
+        tmpls (Environment): the templates
+        cfg (Config): the website configuration
+    """
+    for page in pages:
+        # Find a better way to do this -- source the template
+        if page.meta["template"]:
+            template = tmpls.get_template(page.meta["template"])
+        elif page.is_blog:
+            template = tmpls.get_template(cfg.templates.blog.default)
+        else:
+            template = tmpls.get_template(cfg.templates.default)
+        # Prepare the way
+        dest = os.path.join(cfg.site.build_dir, page.url)
+        if not os.path.exists(os.path.dirname(dest)):
+            os.makedirs(os.path.dirname(dest))
+        # Rendering
+        with open(dest, "w", encoding="utf-8") as fh:
+            fh.write(page.render(template))
+
+
 def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
     """Build a website from source.
 
@@ -115,36 +134,28 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
     if not os.path.isdir(build_dir):
         raise FileNotFoundError(f"build directoy {build_dir} does not exist")
 
-    symlink_directory(source_dir, build_dir)
+    # Symlink the non-generated contents (images, etc.) into the destination
+    symlink_directory(
+        source=source_dir,
+        dest=build_dir,
+        hide_prefixes="_.",
+        hide_suffixes=("md", "draft"),
+    )
 
-    blogs: List[Page] = []
+    # Read and render the pages
+    pages = [Page.from_path(path, source_dir) for path in find_pages(source_dir)]
     templates = load_templates_from_dir(config.templates.source_dir)
 
-    for path in find_pages(source_dir):
-        with open(path, "r") as f:
-            page = Page(source=f.read(), website_path=os.path.relpath(path, source_dir))
-        # Track blogs
-        if page.website_path.startswith("blog/"):
-            blogs += [page]
-        # Think through a better way to do this
-        if page.meta["template"]:
-            template = templates.get_template(page.meta["template"])
-        elif page.website_path.startswith("blog/"):
-            template = templates.get_template(config.templates.blog.default)
-        else:
-            template = templates.get_template(config.templates.default)
-        # Destination paths
-        dest = os.path.join(config.site.build_dir, page.url)
-        if not os.path.exists(os.path.dirname(dest)):
-            os.makedirs(os.path.dirname(dest))
-        # Rendering
-        with open(dest, "w", encoding="utf-8") as fh:
-            fh.write(page.render(template))
+    render_markdown_pages(pages, templates, config)
 
     # Blogs get their own collection
     blogs = sorted(
-        (b for b in blogs if not b.meta["draft"]), key=lambda p: p.date, reverse=True
+        (p for p in pages if p.is_blog and not p.meta["draft"]),
+        key=lambda p: p.date,
+        reverse=True,
     )
+
+    # Render generated pages ---------------------------------------------------
 
     # Index page
     with open(os.path.join(config.site.build_dir, "blog/index.html"), "w") as f:
@@ -195,7 +206,7 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
         template = templates.get_template(config.templates.feeds.rss)
         f.write(template.render(posts=blogs, build_date=datetime.now()))
 
-    # Conly count full builds; here at the end
+    # Only count full builds; here at the end
     if config.build_count_file is not None:
         path = os.path.join(
             config.site.source_dir, os.path.basename(config.build_count_file)

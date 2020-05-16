@@ -6,7 +6,7 @@ import json
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple, TypeVar
+from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
 from dateparser import parse as parse_date
 from jinja2 import Environment, FileSystemLoader, Template
@@ -120,6 +120,9 @@ class Page:
         self.html, meta = parse_markdown(self.source)
         self.meta = check_metadata(meta)
 
+        # Allow for related pages
+        self.related_pages: List[Page] = []
+
     def __repr__(self) -> str:
         """String representation of a Page."""
         return f"Page({self.website_path})"
@@ -176,6 +179,25 @@ class Page:
     def escaped_html(self) -> str:
         """Return escaped HTML for JSON feed."""
         return json.dumps(self.html)
+
+    @property
+    def is_blog(self) -> bool:
+        """Does this Page look blog-related?"""
+        return self.website_path.startswith("blog/")
+
+    @classmethod
+    def from_path(cls, src: str, website_root: str) -> "Page":
+        """Return a new Page read from a file.
+
+        Args:
+            src (str): path to the paper
+            website_root (str): the local root of the website
+
+        Return:
+            (Page) a new Page object
+        """
+        with open(src, "r") as f:
+            return Page(f.read(), os.path.relpath(src, website_root))
 
 
 # Load templates
