@@ -145,21 +145,16 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
 
     # Read and render the pages
     pages = [Page.from_path(path, source_dir) for path in find_pages(source_dir)]
+    pages = [p for p in pages if not p.meta["draft"]]
+    blogs = sorted((p for p in pages if p.is_blog), key=lambda p: p.date, reverse=True,)
     templates = load_templates_from_dir(config.templates.source_dir)
-
-    render_markdown_pages(pages, templates, config)
-
-    # Blogs get their own collection
-    blogs = sorted(
-        (p for p in pages if p.is_blog and not p.meta["draft"]),
-        key=lambda p: p.date,
-        reverse=True,
-    )
 
     # Bind in the text similarity for blog posts
     sim = page_similarities(pages)
     for page in blogs:
         page.related_pages = sim[page]
+
+    render_markdown_pages(pages, templates, config)
 
     # Render generated pages ---------------------------------------------------
 

@@ -149,6 +149,8 @@ class Page:
             url=self.url,
             topdir=self.rootdir,
             escaped_html=self.escaped_html,
+            related_pages=self.related_pages,
+            post=self,
             **self.meta,
         )
 
@@ -184,6 +186,16 @@ class Page:
     def is_blog(self) -> bool:
         """Does this Page look blog-related?"""
         return self.website_path.startswith("blog/")
+
+    def count_related_pages(
+        self, threshold: float = 1.0, only_blog: bool = False
+    ) -> float:
+        """Return the number of related posts with a given score."""
+        return sum(
+            score >= threshold
+            for score, page in self.related_pages.items()
+            if not only_blog or page.is_blog
+        )
 
     @classmethod
     def from_path(cls, src: str, website_root: str) -> "Page":

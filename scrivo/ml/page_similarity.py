@@ -16,9 +16,13 @@ STEMMER = EnglishStemmer()
 # Get a plaintext rendering of a page
 def get_page_plaintext(p: Page) -> str:
     """Return a plaintext page rendering for tokenization."""
-    return BeautifulSoup(p.html, features="html.parser").get_text(
+    # Bit of a hack, but throw in any tags and the page title
+    title_text = p.meta["title"]
+    tags_text = " ".join(p.meta["tags"])
+    page_text = BeautifulSoup(p.html, features="html.parser").get_text(
         separator=" ", strip=True
     )
+    return " ".join([title_text, tags_text, page_text])
 
 
 def tokenize_stop_stem(doc: str) -> List[str]:
@@ -55,10 +59,12 @@ def page_similarities(pages: List[Page]) -> Dict[Page, Dict[float, Page]]:
     # Return a descending-ordered set of nonzero similarities
     result = {}
     for i, page in enumerate(pages):
-        # Get nonzero entries and indices, sorted by similarity
+        # Sort by similarity, descending, but track indices to match to pages
         vec = similarity[:, i].toarray().reshape(-1)
         indices = np.argsort(-vec)
-        vec = vec[indices]
-        indices = np.argwhere(vec > 0.001).reshape(-1)
+        # Mask out nonzero results
+        nonzero_indices = np.argwhere(vec > 0).reshape(-1)
+        indices = indices[np.isin(indices, nonzero_indices)]
+        # Build the final dict
         result[page] = {vec[j]: pages[j] for j in indices if pages[j] != page}
     return result
