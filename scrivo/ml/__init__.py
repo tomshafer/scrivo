@@ -1,3 +1,3 @@
 """ML tools for the website."""
 
-from .page_similarity import page_similarities  # noqa: F401
+from scrivo.ml.page_similarity import page_similarities  # noqa: F401

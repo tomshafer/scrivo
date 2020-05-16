@@ -11,6 +11,15 @@ from scrivo.config import Config
 from scrivo.ml import page_similarities
 from scrivo.page import Page, load_templates_from_dir
 
+__all__ = [
+    "increment_counter",
+    "find_pages",
+    "symlink_directory",
+    "render_markdown_pages",
+    "compile_site",
+]
+
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -158,6 +167,7 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
 
     # Render generated pages ---------------------------------------------------
 
+    # TODO: Clean these up
     # Index page
     with open(os.path.join(config.site.build_dir, "blog/index.html"), "w") as f:
         template = templates.get_template(config.templates.blog.home)

@@ -14,6 +14,9 @@ from markdown import Markdown
 
 from scrivo.markdown import YAMLMetadataExtension
 
+__all__ = ["Page", "load_templates_from_dir"]
+
+
 # This is the entire configuration of the Markdown parser
 _md_parser = Markdown(
     output_format="html5",

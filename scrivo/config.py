@@ -5,6 +5,8 @@ from typing import Any, Dict, NamedTuple, Optional
 
 from yaml import safe_load
 
+__all__ = ["Config", "read_config"]
+
 
 # Enforce types on the config files
 class SiteConfig(NamedTuple):

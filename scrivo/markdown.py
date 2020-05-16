@@ -7,6 +7,9 @@ import yaml
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
+__all__ = ["YAMLMetadataExtension", "YAMLMetadataPreprocessor"]
+
+
 logger = logging.getLogger()
 
 

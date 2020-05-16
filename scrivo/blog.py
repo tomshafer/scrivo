@@ -18,6 +18,9 @@ from jinja2 import Template
 
 from scrivo.page import Page
 
+__all__ = ["render_archives_page", "render_tags_page"]
+
+
 # For typing
 Posts = Iterable[Page]
 
