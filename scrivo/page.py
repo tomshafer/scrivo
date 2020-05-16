@@ -74,7 +74,7 @@ def check_metadata(meta: Dict) -> Dict[str, Any]:
     # Warn about invalid metadata
     invalid = provided_meta.difference(ACCEPTABLE_METADATA)
     for key in invalid:
-        logging.warning('metadata key "%s" will not be parsed', key)
+        logging.info('metadata key "%s" will not be parsed', key)
     # Assign with defaults
     # TODO: wrap as a function
     return {
