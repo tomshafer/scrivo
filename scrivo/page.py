@@ -6,7 +6,7 @@ import json
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, Optional, Tuple, TypeVar
 
 from dateparser import parse as parse_date
 from jinja2 import Environment, FileSystemLoader, Template
@@ -121,7 +121,7 @@ class Page:
         self.meta = check_metadata(meta)
 
         # Allow for related pages
-        self.related_pages: List[Page] = []
+        self.related_pages: Dict[float, Page] = {}
 
     def __repr__(self) -> str:
         """String representation of a Page."""

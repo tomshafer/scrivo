@@ -8,6 +8,7 @@ from jinja2 import Environment
 
 from scrivo.blog import render_archives_page, render_tags_page
 from scrivo.config import Config
+from scrivo.ml import page_similarities
 from scrivo.page import Page, load_templates_from_dir
 
 logger = logging.getLogger(__name__)
@@ -154,6 +155,11 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
         key=lambda p: p.date,
         reverse=True,
     )
+
+    # Bind in the text similarity for blog posts
+    sim = page_similarities(pages)
+    for page in blogs:
+        page.related_pages = sim[page]
 
     # Render generated pages ---------------------------------------------------
 
