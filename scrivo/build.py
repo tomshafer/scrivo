@@ -140,16 +140,16 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
         config (Config): site configuration
     """
     if not os.path.isdir(source_dir):
-        raise FileNotFoundError(f"source directoy {source_dir} does not exist")
+        raise FileNotFoundError(f"source directory {source_dir} does not exist")
     if not os.path.isdir(build_dir):
-        raise FileNotFoundError(f"build directoy {build_dir} does not exist")
+        raise FileNotFoundError(f"build directory {build_dir} does not exist")
 
     # Symlink the non-generated contents (images, etc.) into the destination
     symlink_directory(
         source=source_dir,
         dest=build_dir,
         hide_prefixes="_.",
-        hide_suffixes=("md", "draft"),
+        hide_suffixes=("md", "draft", "pxm"),
     )
 
     # Read and render the pages

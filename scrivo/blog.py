@@ -75,10 +75,10 @@ def render_tags_page(posts: Posts, template: Template) -> str:
             for tag in post.meta["tags"]:
                 tagged_posts[tag] += [post]
         else:
-            tagged_posts["untagged"] += [post]
+            tagged_posts["miscellaneous"] += [post]
     # Hack to re-sort untagged to the bottom
     out = OrderedDict()
-    for k in sorted(set(tagged_posts).difference({"untagged"})):
+    for k in sorted(set(tagged_posts).difference({"miscellaneous"})):
         out[k] = tagged_posts[k]
-    out["untagged"] = tagged_posts["untagged"]
+    out["miscellaneous"] = tagged_posts["miscellaneous"]
     return template.render(tags=out)

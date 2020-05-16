@@ -21,4 +21,5 @@ setup(
     ],
     python_requires=">=3.6",
     install_requires=["dateparser", "jinja2", "markdown", "python-markdown-math"],
+    scripts=["bin/sitesync"],
 )
