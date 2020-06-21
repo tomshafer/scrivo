@@ -131,13 +131,16 @@ def render_markdown_pages(pages: List[Page], tmpls: Environment, cfg: Config) ->
             fh.write(page.render(template))
 
 
-def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
+def compile_site(
+    source_dir: str, build_dir: str, config: Config, include_drafts: bool = False
+) -> None:
     """Build a website from source.
 
     Args:
         source_dir (str): directory containing source files
         build_dir (str): directory in which to write output files
         config (Config): site configuration
+        include_drafts (bool): include drafts in output
     """
     if not os.path.isdir(source_dir):
         raise FileNotFoundError(f"source directory {source_dir} does not exist")
@@ -154,7 +157,7 @@ def compile_site(source_dir: str, build_dir: str, config: Config) -> None:
 
     # Read and render the pages
     pages = [Page.from_path(path, source_dir) for path in find_pages(source_dir)]
-    pages = [p for p in pages if not p.meta["draft"]]
+    pages = [p for p in pages if include_drafts or not p.meta["draft"]]
     blogs = sorted((p for p in pages if p.is_blog), key=lambda p: p.date, reverse=True,)
     templates = load_templates_from_dir(config.templates.source_dir)
 

@@ -22,4 +22,4 @@ if [[ -z "$SCRIVO_REMOTE_DIR" ]]; then
 fi
 
 # Force a trailing "/" for rsync (an extra "/" doesn't hurt)
-rsync -vrLz --delete-after "$1/" "$SCRIVO_REMOTE_HOST":"$SCRIVO_REMOTE_DIR"
+rsync -vrLz "$1/" "$SCRIVO_REMOTE_HOST":"$SCRIVO_REMOTE_DIR"
