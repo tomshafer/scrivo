@@ -20,6 +20,6 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=["dateparser", "jinja2", "markdown", "python-markdown-math"],
+    install_requires=["dateparser", "jinja2", "markdown", "python-markdown-math", "numpy", "bs4", "scikit-learn"],
     scripts=["bin/sitesync"],
 )

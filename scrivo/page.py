@@ -3,7 +3,6 @@
 Pages originate in Markdown and are to be rendered as HTML.
 """
 import json
-import logging
 import os
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple, TypeVar
@@ -72,12 +71,6 @@ def check_metadata(meta: Dict) -> Dict[str, Any]:
         dict(str, Any): a dict of cleaned metadata entries
 
     """
-    ACCEPTABLE_METADATA = {"title", "date", "tags", "draft", "template", "heading"}
-    provided_meta = set(meta.keys())
-    # Warn about invalid metadata
-    invalid = provided_meta.difference(ACCEPTABLE_METADATA)
-    for key in invalid:
-        logging.info('metadata key "%s" will not be parsed', key)
     # Assign with defaults
     # TODO: wrap as a function
     return {

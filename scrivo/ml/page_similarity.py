@@ -1,5 +1,6 @@
 """Compute text similarity between Pages."""
 
+import logging
 import re
 from typing import Dict, List
 
@@ -9,8 +10,11 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS, TfidfVectorizer
 from snowballstemmer import EnglishStemmer
 
 from scrivo.page import Page
+from scrivo.utils import logtime
 
 STEMMER = EnglishStemmer()
+
+logger = logging.getLogger(__name__)
 
 
 # Get a plaintext rendering of a page
@@ -38,6 +42,7 @@ def tokenize_stop_stem(doc: str) -> List[str]:
 
 
 # Compute the TF-IDF for a collection of Pages
+@logtime
 def page_similarities(pages: List[Page]) -> Dict[Page, Dict[float, Page]]:
     """Calculate TF-IDF page similarities between all pages.
 
@@ -67,4 +72,5 @@ def page_similarities(pages: List[Page]) -> Dict[Page, Dict[float, Page]]:
         indices = indices[np.isin(indices, nonzero_indices)]
         # Build the final dict
         result[page] = {vec[j]: pages[j] for j in indices if pages[j] != page}
+
     return result

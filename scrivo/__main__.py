@@ -1,7 +1,6 @@
 """Command-line interface to the website generation tool."""
 import logging
 from argparse import ArgumentParser, Namespace
-from time import time
 
 from scrivo.build import compile_site
 from scrivo.config import read_config
@@ -51,11 +50,9 @@ if __name__ == "__main__":
     if cli.VERBOSE:
         logging.getLogger().setLevel(logging.INFO)
     config = read_config(cli.CONFIG_YAML)
-    time_start = time()
     compile_site(
         source_dir=cli.SOURCE_DIR,
         build_dir=cli.OUTPUT_DIR,
         config=config,
         include_drafts=cli.INCLUDE_DRAFTS,
     )
-    logging.info("finished compilation in %.3f seconds", time() - time_start)

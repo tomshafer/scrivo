@@ -1,6 +1,7 @@
 """Compile a static site from Markdown files."""
 import logging
 import os
+import time
 from datetime import datetime
 from typing import Iterable, List
 
@@ -10,6 +11,7 @@ from scrivo.blog import render_archives_page, render_tags_page
 from scrivo.config import Config
 from scrivo.ml import page_similarities
 from scrivo.page import Page, load_templates_from_dir
+from scrivo.utils import logtime
 
 __all__ = [
     "increment_counter",
@@ -20,23 +22,25 @@ __all__ = [
 ]
 
 
+logging.basicConfig(format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
+@logtime
 def increment_counter(dest: str) -> None:
     """Increment a Siracusa-style process counter."""
     mode = "r+" if os.path.exists(dest) else "a+"
     with open(dest, mode) as f:
         contents = f.read()
         count = int(contents) if contents else 0
-        logger.info("build count: %d", count + 1)
+        logger.info("Build count: %d", count + 1)
         f.seek(0)
         f.write(str(count + 1) + "\n")
         # From SO -- need this to get correct behavior
         f.truncate()
 
 
+@logtime
 def find_pages(directory: str, exts: Iterable[str] = ("md",)) -> List[str]:
     """Return a list of source paths within a top-level directory.
 
@@ -56,6 +60,14 @@ def find_pages(directory: str, exts: Iterable[str] = ("md",)) -> List[str]:
     ]
 
 
+@logtime
+def fetch_pages(srcdir: str, include_drafts: bool = False) -> List[Page]:
+    """Return a list of Page objects for processing."""
+    pages = (Page.from_path(path, srcdir) for path in find_pages(srcdir))
+    return [p for p in pages if include_drafts or not p.meta["draft"]]
+
+
+@logtime
 def symlink_directory(
     source: str,
     dest: str,
@@ -101,11 +113,12 @@ def symlink_directory(
             dest_link = os.path.abspath(os.path.join(dest_dir, f))
             if os.path.exists(dest_link):
                 if not os.path.islink(dest_link):
-                    logger.warning("path %s exists but isn't already a link", dest_link)
+                    logger.warning("path %s exists but isn't a link", dest_link)
                 continue
             os.symlink(src_link, dest_link)
 
 
+@logtime
 def render_markdown_pages(pages: List[Page], tmpls: Environment, cfg: Config) -> None:
     """Render the standard collection on Markdown pages (not the generated ones).
 
@@ -131,6 +144,7 @@ def render_markdown_pages(pages: List[Page], tmpls: Environment, cfg: Config) ->
             fh.write(page.render(template))
 
 
+@logtime
 def compile_site(
     source_dir: str, build_dir: str, config: Config, include_drafts: bool = False
 ) -> None:
@@ -156,8 +170,7 @@ def compile_site(
     )
 
     # Read and render the pages
-    pages = [Page.from_path(path, source_dir) for path in find_pages(source_dir)]
-    pages = [p for p in pages if include_drafts or not p.meta["draft"]]
+    pages = fetch_pages(source_dir, include_drafts)
     blogs = sorted((p for p in pages if p.is_blog), key=lambda p: p.date, reverse=True,)
     templates = load_templates_from_dir(config.templates.source_dir)
 
@@ -172,15 +185,18 @@ def compile_site(
 
     # TODO: Clean these up
     # Index page
+    timer_start = time.time()
     with open(os.path.join(config.site.build_dir, "blog/index.html"), "w") as f:
         template = templates.get_template(config.templates.blog.home)
         f.write(template.render(posts=blogs, template=template))
+    logger.info("Rendered index page in %.03f s", time.time() - timer_start)
 
     # Archive pages
+    timer_start = time.time()
     template = templates.get_template(config.templates.blog.archives)
 
     # Main archive
-    url = os.path.join(config.site.build_dir, f"blog/archive/index.html")
+    url = os.path.join(config.site.build_dir, "blog/archive/index.html")
     if not os.path.exists(url):
         os.makedirs(os.path.dirname(url))
     with open(url, "w") as f:
@@ -201,16 +217,20 @@ def compile_site(
                 f.write(
                     render_archives_page(month_blogs, template, year=year, month=month)
                 )
+    logger.info("Rendered archive pages in %.03f s", time.time() - timer_start)
 
     # Tags page
+    timer_start = time.time()
     url = os.path.join(config.site.build_dir, "blog/tags/index.html")
     if not os.path.exists(url):
         os.makedirs(os.path.dirname(url))
     with open(url, "w") as f:
         template = templates.get_template(config.templates.blog.tags)
         f.write(render_tags_page(posts=blogs, template=template))
+    logger.info("Rendered tags pages in %.03f s", time.time() - timer_start)
 
     # JSON feed
+    timer_start = time.time()
     with open(os.path.join(config.site.build_dir, "blog", "feed.json"), "w") as f:
         template = templates.get_template(config.templates.feeds.json)
         f.write(template.render(posts=blogs))
@@ -219,6 +239,7 @@ def compile_site(
     with open(os.path.join(config.site.build_dir, "blog", "rss.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss)
         f.write(template.render(posts=blogs, build_date=datetime.now()))
+    logger.info("Rendered feeds in %.03f s", time.time() - timer_start)
 
     # Only count full builds; here at the end
     if config.build_count_file is not None:
