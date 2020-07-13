@@ -7,7 +7,6 @@ import os
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple, TypeVar
 
-from dateparser import parse as parse_date
 from jinja2 import Environment, FileSystemLoader, Template
 from markdown import Markdown
 
@@ -42,6 +41,58 @@ _md_parser = Markdown(
 )
 
 
+def get_default(dct, key, default=None, fn=None):
+    """Get a value from a dict and transform if not the default."""
+    value = dct.get(key, default)
+    if fn is not None and value != default:
+        return fn(value)
+    return value
+
+
+def set_metadata(raw_meta: Dict) -> Dict[str, Any]:
+    """Ensure a Page has the minimum expected metadata.
+
+    We currently check for:
+
+      - title
+      - date
+      - tags
+      - template
+      - draft
+      - html_desc
+      - html_head
+
+    Additional metadata is left as-is and carried through.
+
+    Args:
+        raw_meta (dict): metadata from the Markdown parser
+
+    Returns:
+        (dict[str, Any]) a dict guaranteed to have the necessary properties
+
+    """
+    meta = {
+        "title": get_default(raw_meta, "title", None),
+        "date": get_default(
+            dct=raw_meta,
+            key="date",
+            default=None,
+            fn=lambda d: datetime.strptime(d, "%Y-%m-%d %H:%M %p"),
+        ),
+        "tags": get_default(raw_meta, "tags", []),
+        "template": get_default(raw_meta, "template", None),
+        "draft": get_default(raw_meta, "draft", False, bool),
+        "html_desc": get_default(raw_meta, "html_desc", None),
+        "html_head": get_default(raw_meta, "html_head", None),
+    }
+
+    # Pass through any other data
+    for k in set(raw_meta.keys()).difference(meta.keys()):
+        meta[k] = raw_meta[k]
+
+    return meta
+
+
 def parse_markdown(source: str) -> Tuple[str, Dict]:
     """Parse a Markdown document using our custom parser.
 
@@ -57,35 +108,8 @@ def parse_markdown(source: str) -> Tuple[str, Dict]:
     # Reset or we'll have leftover garbage from the previous file
     _md_parser.reset()
     html: str = _md_parser.convert(source)
-    meta: Dict = _md_parser.metadata  # pylint: disable=no-member
+    meta: Dict = set_metadata(_md_parser.metadata)
     return html, meta
-
-
-def check_metadata(meta: Dict) -> Dict[str, Any]:
-    """Clean the provided metadata and check for unexpected values.
-
-    Args:
-        meta (dict): metadata from the Markdown parser
-
-    Returns:
-        dict(str, Any): a dict of cleaned metadata entries
-
-    """
-    # Assign with defaults
-    # TODO: wrap as a function
-    return {
-        "title": meta["title"] if "title" in meta else None,
-        "date": parse_date(
-            meta["date"],
-            settings={"TIMEZONE": "US/Eastern", "RETURN_AS_TIMEZONE_AWARE": True},
-        )
-        if "date" in meta
-        else None,
-        "tags": list(meta["tags"]) if "tags" in meta else [],
-        "draft": bool(meta["draft"]) if "draft" in meta else False,
-        "template": meta["template"] if "template" in meta else None,
-        "heading": meta["heading"] if "heading" in meta else None,
-    }
 
 
 # This TypeVar allows us to type hint a class method
@@ -105,16 +129,13 @@ class Page:
 
     """
 
-    _default_date = "2001-01-01"
-
     def __init__(self, source: str, website_path: str) -> None:
         """A Page is created from a source and with a path."""
         self.source = source
         self.website_path = website_path
 
         # Parse the source to HTML and metadata
-        self.html, meta = parse_markdown(self.source)
-        self.meta = check_metadata(meta)
+        self.html, self.meta = parse_markdown(self.source)
 
         # Allow for related pages
         self.related_pages: Dict[float, Page] = {}
@@ -165,7 +186,7 @@ class Page:
         """Return a datetime object."""
         if self.meta["date"]:
             return self.meta["date"]
-        return parse_date(self._default_date)
+        return datetime(year=2001, month=1, day=1)
 
     @property
     def rootdir(self) -> str:

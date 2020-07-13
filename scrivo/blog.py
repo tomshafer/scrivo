@@ -13,7 +13,6 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime
 from typing import DefaultDict, Iterable, List, Optional
 
-from dateparser import parse as parse_date
 from jinja2 import Template
 
 from scrivo.page import Page
@@ -41,16 +40,13 @@ def render_archives_page(
 
     """
     archive_date: Optional[datetime] = None
-    date_format: str = "%B %d, %Y"
+    date_format = "%B %d, %Y"
     if year is not None:
-        archive_str = f"{year:04d}"
         if month is not None:
-            archive_str += f"-{month:02d}-01"
-            archive_date = parse_date(archive_str).strftime("%B %Y")
+            archive_date = datetime(year=year, month=month, day=1)
         else:
             date_format = "%B %Y"
-            archive_str += "-01-01"
-            archive_date = parse_date(archive_str).strftime("%Y")
+            archive_date = datetime(year=year, month=1, day=1)
     return template.render(
         posts=sorted(posts, key=lambda p: p.date),
         archive_title=archive_date,

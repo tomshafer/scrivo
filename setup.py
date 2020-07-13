@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="scrivo",
-    version="0.0.1",
+    version="0.0.2",
     author="Tom Shafer",
     author_email="contact@tshafer.com",
     description="A static website generator.",
@@ -21,7 +21,6 @@ setup(
     ],
     python_requires=">=3.6",
     install_requires=[
-        "dateparser",
         "jinja2",
         "markdown",
         "python-markdown-math",
