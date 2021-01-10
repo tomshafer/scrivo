@@ -27,6 +27,7 @@ setup(
         "numpy",
         "bs4",
         "scikit-learn",
+        "yaml",
     ],
     scripts=["bin/sitesync"],
 )
