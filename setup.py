@@ -27,6 +27,7 @@ setup(
         "numpy",
         "bs4",
         "scikit-learn",
+        "snowballstemmer",
         "PyYAML",
     ],
     scripts=["bin/sitesync"],
