@@ -1,6 +1,7 @@
 """Compile a static site from Markdown files."""
 import logging
 import os
+import re
 import time
 from datetime import datetime
 from typing import Iterable, List
@@ -145,6 +146,15 @@ def render_markdown_pages(pages: List[Page], tmpls: Environment, cfg: Config) ->
 
 
 @logtime
+def generate_sitemap(urllist: List[str]) -> str:
+    out = ['<?xml version="1.0" encoding="UTF-8"?>']
+    out += ['<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    out += [f"<url>\n<loc>{url}</loc>\n</url>" for url in sorted(set(urllist))]
+    out += ["</urlset>"]
+    return "\n".join(out) + "\n"
+
+
+@logtime
 def compile_site(
     source_dir: str, build_dir: str, config: Config, include_drafts: bool = False
 ) -> None:
@@ -173,6 +183,7 @@ def compile_site(
     pages = fetch_pages(source_dir, include_drafts)
     blogs = sorted((p for p in pages if p.is_blog), key=lambda p: p.date, reverse=True,)
     templates = load_templates_from_dir(config.templates.source_dir)
+    sitemap_cache = [os.path.join(config.site.build_dir, p.website_path) for p in pages]
 
     # Bind in the text similarity for blog posts
     sim = page_similarities(pages)
@@ -197,6 +208,7 @@ def compile_site(
 
     # Main archive
     url = os.path.join(config.site.build_dir, "blog/archive/index.html")
+    sitemap_cache += [url]
     if not os.path.exists(url):
         os.makedirs(os.path.dirname(url))
     with open(url, "w") as f:
@@ -206,6 +218,7 @@ def compile_site(
     for year in {b.date.year for b in blogs}:
         year_blogs = [b for b in blogs if b.date.year == year]
         url = os.path.join(config.site.build_dir, f"blog/{year:04d}/index.html")
+        sitemap_cache += [url]
         with open(url, "w") as f:
             f.write(render_archives_page(year_blogs, template, year=year))
         for month in {b.date.month for b in year_blogs}:
@@ -213,6 +226,7 @@ def compile_site(
             url = os.path.join(
                 config.site.build_dir, f"blog/{year:04d}/{month:02d}/index.html"
             )
+            sitemap_cache += [url]
             with open(url, "w") as f:
                 f.write(
                     render_archives_page(month_blogs, template, year=year, month=month)
@@ -222,6 +236,7 @@ def compile_site(
     # Tags page
     timer_start = time.time()
     url = os.path.join(config.site.build_dir, "blog/tags/index.html")
+    sitemap_cache += [url]
     if not os.path.exists(url):
         os.makedirs(os.path.dirname(url))
     with open(url, "w") as f:
@@ -240,6 +255,34 @@ def compile_site(
         template = templates.get_template(config.templates.feeds.rss)
         f.write(template.render(posts=blogs, build_date=datetime.now()))
     logger.info("Rendered feeds in %.03f s", time.time() - timer_start)
+
+    # Sitemap
+    psages = []
+    for pwd, _, files in os.walk(config.site.build_dir):
+        relpath = os.path.relpath(pwd, config.site.build_dir).replace("./", "")
+        if relpath.startswith("assets"):
+            continue
+        pages = [f for f in files if f.endswith(("html", "json", "xml", "pdf"))]
+        if not pages:
+            continue
+        pages = ["" if p == "index.html" else p for p in pages]
+        pages = [p.replace(".html", "") for p in pages]
+        psages += [os.path.join("https://tshafer.com",relpath, p) for p in pages]
+    for p in psages:
+        print(p)
+
+    # with open(os.path.join(config.site.build_dir, "sitemap.xml"), "w") as f:
+    #     sitemap_cache = [
+    #         "https://tshafer.com/"
+    #         + re.sub(
+    #             r"(index\.[^.]+$|\.md$)",
+    #             "",
+    #             os.path.relpath(c, config.site.build_dir),
+    #             re.I,
+    #         )
+    #         for c in sitemap_cache
+    #     ]
+    #     f.write(generate_sitemap(sitemap_cache)
 
     # Only count full builds; here at the end
     if config.build_count_file is not None:

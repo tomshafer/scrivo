@@ -48,7 +48,7 @@ def render_archives_page(
             date_format = "%B %Y"
             archive_date = datetime(year=year, month=1, day=1)
     return template.render(
-        posts=sorted(posts, key=lambda p: p.date),
+        posts=sorted(posts, key=lambda p: p.date, reverse=True),
         archive_title=archive_date,
         date_format=date_format,
     )
