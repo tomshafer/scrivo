@@ -20,6 +20,7 @@ _md_parser = Markdown(
     output_format="html5",
     tab_length=2,
     extensions=[
+        "markdown.extensions.abbr",
         "markdown.extensions.fenced_code",
         "markdown.extensions.footnotes",
         "markdown.extensions.tables",

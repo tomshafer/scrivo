@@ -267,7 +267,7 @@ def compile_site(
             continue
         pages = ["" if p == "index.html" else p for p in pages]
         pages = [p.replace(".html", "") for p in pages]
-        psages += [os.path.join("https://tshafer.com",relpath, p) for p in pages]
+        psages += [os.path.join("https://tshafer.com", relpath, p) for p in pages]
     for p in psages:
         print(p)
 
