@@ -22,24 +22,11 @@ def parse_args() -> Namespace:
         help="compile drafts in addition to finalized posts",
     )
     parser.add_argument(
-        "-s",
-        metavar="<source_dir>",
-        dest="SOURCE_DIR",
-        required=True,
-        help="source directory (root of the website source)",
-    )
-    parser.add_argument(
-        "-o",
-        metavar="<output_dir>",
-        dest="OUTPUT_DIR",
-        required=True,
-        help="output directory (root of the compiled website)",
-    )
-    parser.add_argument(
         "-c",
         metavar="<config_yml>",
         dest="CONFIG_YAML",
         default="config.yml",
+        required=True,
         help="location of the YAML configuration file",
     )
     return parser.parse_args()
@@ -50,9 +37,10 @@ if __name__ == "__main__":
     if cli.VERBOSE:
         logging.getLogger().setLevel(logging.INFO)
     config = read_config(cli.CONFIG_YAML)
+    # FIXME: Combine CLI args with config in a sensible way
     compile_site(
-        source_dir=cli.SOURCE_DIR,
-        build_dir=cli.OUTPUT_DIR,
+        source_dir=config.site.source_dir,
+        build_dir=config.site.build_dir,
         config=config,
         include_drafts=cli.INCLUDE_DRAFTS,
     )
