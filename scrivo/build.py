@@ -260,7 +260,7 @@ def compile_site(
 
     rp = (b for b in blogs if "tags" in b.meta and "r-programming" in b.meta["tags"])
     with open(os.path.join(config.site.build_dir, "blog", "rss-r.xml"), "w") as f:
-        template = templates.get_template(config.templates.feeds.rss)
+        template = templates.get_template(config.templates.feeds.rss_r)
         f.write(template.render(posts=rp, build_date=datetime.now()))
     logger.info("Rendered feeds in %.03f s", time.time() - timer_start)
 
