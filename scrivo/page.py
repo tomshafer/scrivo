@@ -17,7 +17,7 @@ __all__ = ["Page", "load_templates_from_dir"]
 
 # This is the entire configuration of the Markdown parser
 _md_parser = Markdown(
-    output_format="html5",
+    output_format="html5",  # type: ignore
     tab_length=2,
     extensions=[
         "markdown.extensions.abbr",
@@ -109,7 +109,7 @@ def parse_markdown(source: str) -> Tuple[str, Dict]:
     # Reset or we'll have leftover garbage from the previous file
     _md_parser.reset()
     html: str = _md_parser.convert(source)
-    meta: Dict = set_metadata(_md_parser.metadata)
+    meta: Dict = set_metadata(_md_parser.metadata)  # type: ignore
     return html, meta
 
 

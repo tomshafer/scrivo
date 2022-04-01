@@ -1,7 +1,6 @@
 """Compile a static site from Markdown files."""
 import logging
 import os
-import re
 import time
 from datetime import datetime
 from typing import Iterable, List
@@ -181,7 +180,11 @@ def compile_site(
 
     # Read and render the pages
     pages = fetch_pages(source_dir, include_drafts)
-    blogs = sorted((p for p in pages if p.is_blog), key=lambda p: p.date, reverse=True,)
+    blogs = sorted(
+        (p for p in pages if p.is_blog),
+        key=lambda p: p.date,
+        reverse=True,
+    )
     templates = load_templates_from_dir(config.templates.source_dir)
     sitemap_cache = [os.path.join(config.site.build_dir, p.website_path) for p in pages]
 
@@ -250,10 +253,15 @@ def compile_site(
         template = templates.get_template(config.templates.feeds.json)
         f.write(template.render(posts=blogs))
 
-    # RSS feed
+    # RSS feeds
     with open(os.path.join(config.site.build_dir, "blog", "rss.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss)
         f.write(template.render(posts=blogs, build_date=datetime.now()))
+
+    rp = (b for b in blogs if "tags" in b.meta and "r-programming" in b.meta["tags"])
+    with open(os.path.join(config.site.build_dir, "blog", "rss-r.xml"), "w") as f:
+        template = templates.get_template(config.templates.feeds.rss)
+        f.write(template.render(posts=rp, build_date=datetime.now()))
     logger.info("Rendered feeds in %.03f s", time.time() - timer_start)
 
     # Sitemap
