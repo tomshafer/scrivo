@@ -60,8 +60,8 @@ class YAMLMetadataPreprocessor(Preprocessor):
         if yaml_start is None and yaml_end is None:
             new_lines = lines
         elif yaml_start is not None and yaml_end is not None:
-            new_lines = lines[(yaml_end + 1):]
-            metadata = yaml.safe_load("\n".join(lines[(yaml_start + 1):yaml_end]))
+            new_lines = lines[(yaml_end + 1) :]
+            metadata = yaml.safe_load("\n".join(lines[(yaml_start + 1) : yaml_end]))
         else:
             raise ValueError("did not find the end of the YAML header block")
 
