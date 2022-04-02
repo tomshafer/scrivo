@@ -4,7 +4,7 @@ import os
 import time
 from datetime import datetime
 from typing import Iterable, List
-
+import copy
 from jinja2 import Environment
 
 from scrivo.blog import render_archives_page, render_tags_page
@@ -252,7 +252,9 @@ def compile_site(
             os.makedirs(os.path.dirname(url))
         with open(url, "w") as f:
             template = templates.get_template(config.templates.blog.tags)
-            tag_posts = (b for b in blogs if tag in b.meta["tags"])
+            tag_posts = [copy.deepcopy(b) for b in blogs if tag in b.meta["tags"]]
+            for p in tag_posts:
+                p.meta["tags"]=[tag]
             f.write(render_tags_page(posts=tag_posts, template=template))
     logger.info("Rendered tags pages in %.03f s", time.time() - timer_start)
 
