@@ -245,6 +245,15 @@ def compile_site(
     with open(url, "w") as f:
         template = templates.get_template(config.templates.blog.tags)
         f.write(render_tags_page(posts=blogs, template=template))
+    tags = {t for b in blogs for t in list(b.meta["tags"])}
+    for tag in tags:
+        url = os.path.join(config.site.build_dir, f"blog/tags/{tag}/index.html")
+        if not os.path.exists(url):
+            os.makedirs(os.path.dirname(url))
+        with open(url, "w") as f:
+            template = templates.get_template(config.templates.blog.tags)
+            tag_posts = (b for b in blogs if tag in b.meta["tags"])
+            f.write(render_tags_page(posts=tag_posts, template=template))
     logger.info("Rendered tags pages in %.03f s", time.time() - timer_start)
 
     # JSON feed
@@ -258,7 +267,7 @@ def compile_site(
         template = templates.get_template(config.templates.feeds.rss)
         f.write(template.render(posts=blogs, build_date=datetime.now()))
 
-    rp = (b for b in blogs if "tags" in b.meta and "r-programming" in b.meta["tags"])
+    rp = (b for b in blogs if "r-programming" in b.meta["tags"])
     with open(os.path.join(config.site.build_dir, "blog", "rss-r.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss_r)
         f.write(template.render(posts=rp, build_date=datetime.now()))
