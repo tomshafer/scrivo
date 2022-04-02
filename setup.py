@@ -4,9 +4,18 @@ from setuptools import find_packages, setup
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+
+def find_version() -> str:
+    with open("scrivo/__init__.py") as file:
+        for line in file:
+            if "__version__" in line:
+                return line.strip().split("=").pop().strip('" ')
+    raise ValueError("Could not find version number")
+
+
 setup(
     name="scrivo",
-    version="0.0.2",
+    version=find_version(),
     author="Tom Shafer",
     author_email="contact@tshafer.com",
     description="A static website generator.",
@@ -14,12 +23,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://gitlab.com/tomshafer/scrivo",
     packages=find_packages(),
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-    ],
-    python_requires=">=3.6",
+    python_requires=">=3.9",
     install_requires=[
         "jinja2",
         "markdown",
