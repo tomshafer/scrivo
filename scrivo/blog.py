@@ -67,14 +67,6 @@ def render_tags_page(posts: Posts, template: Template) -> str:
     """
     tagged_posts: DefaultDict[str, List[Page]] = defaultdict(lambda: [])
     for post in sorted(posts, key=lambda p: p.date, reverse=True):
-        if post.meta["tags"]:
-            for tag in post.meta["tags"]:
-                tagged_posts[tag] += [post]
-        else:
-            tagged_posts["miscellaneous"] += [post]
-    # Hack to re-sort untagged to the bottom
-    out = OrderedDict()
-    for k in sorted(set(tagged_posts).difference({"miscellaneous"})):
-        out[k] = tagged_posts[k]
-    out["miscellaneous"] = tagged_posts["miscellaneous"]
-    return template.render(tags=out)
+        for tag in post.meta["tags"]:
+            tagged_posts[tag] += [post]
+    return template.render(tags=tagged_posts)
