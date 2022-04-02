@@ -89,13 +89,12 @@ def symlink_directory(
     """
     for pwd, _, files in os.walk(source):
         relpwd = os.path.relpath(pwd, source)
-        hidden = any(
-            p.lower().startswith(tuple(hide_prefixes))
-            for p in relpwd.split(os.path.sep)
-        )
-        if hidden:
-            continue
-
+        # hidden = any(
+        #     p.lower().startswith(tuple(hide_prefixes))
+        #     for p in relpwd.split(os.path.sep)
+        # )
+        # if hidden:
+        #     continue
         files = [
             f
             for f in files
@@ -104,7 +103,6 @@ def symlink_directory(
         ]
         if not files:
             continue
-
         dest_dir = os.path.join(dest, relpwd)
         os.makedirs(dest_dir, exist_ok=True)
 
