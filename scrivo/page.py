@@ -80,7 +80,7 @@ def set_metadata(raw_meta: Dict) -> Dict[str, Any]:
             default=None,
             fn=lambda d: datetime.strptime(d, "%Y-%m-%d %H:%M %p"),
         ),
-        "tags": get_default(raw_meta, "tags", []),
+        "tags": get_default(raw_meta, "tags", ["miscellaneous"]),
         "template": get_default(raw_meta, "template", None),
         "draft": get_default(raw_meta, "draft", False, bool),
         "html_desc": get_default(raw_meta, "html_desc", None),
