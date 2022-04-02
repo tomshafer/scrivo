@@ -87,6 +87,10 @@ def set_metadata(raw_meta: Dict) -> Dict[str, Any]:
         "html_head": get_default(raw_meta, "html_head", None),
     }
 
+    # Make sure tags is a list/collection
+    if not isinstance(meta["tags"], (list, tuple, set)):
+        meta["tags"] = [meta["tags"]]
+
     # Pass through any other data
     for k in set(raw_meta.keys()).difference(meta.keys()):
         meta[k] = raw_meta[k]
