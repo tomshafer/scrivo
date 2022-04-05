@@ -1,19 +1,6 @@
+# Example scrivo site configuration
 
 site:
-  url: https://mywebsite.com
-  source_dir: /path/to/source
-  build_dir: /path/to/static/dir
-
-templates:
-  source_dir: /path/to/templates
-  default: main.html
-  blog:
-    default: blog.html
-    home: blog-index.html
-    archives: blog-archives.html
-    tags: blog-tags.html
-  feeds:
-    rss: rss.xml
-    json: feed.json
-
-build_count_file: .scrivo-count
+  url: "http://example.com"
+  source_dir: "~/Sites/Personal/source"
+  output_dir: "~/Sites/Personal/output"

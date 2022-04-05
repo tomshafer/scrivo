@@ -1,84 +1,47 @@
-"""Parse YAML configuration files."""
+"""
+YACS-powered configuration system.
 
-import os
-from typing import Any, Dict, NamedTuple, Optional
+See the YACS documentation for how I've set this up:
+https://github.com/rbgirshick/yacs/blob/master/README.md
+"""
 
-from yaml import safe_load
+from typing import Optional
 
-__all__ = ["Config", "read_config"]
+from yacs.config import CfgNode as CN
 
-
-# Enforce types on the config files
-class SiteConfig(NamedTuple):
-    """Site YAML sub-configuration options."""
-
-    url: str
-    source_dir: str
-    build_dir: str
+__all__ = ["get_default_cfg", "load_config"]
 
 
-class BlogTemplatesConfig(NamedTuple):
-    """Templates YAML sub-configuration options for blog components."""
+_C = CN()
 
-    default: str
-    home: str
-    archives: str
-    tags: str
-
-
-class FeedTemplatesConfig(NamedTuple):
-    """Templates YAML sub-configuration options for feeds."""
-
-    rss: str
-    rss_r: str
-    json: str
+_C.site = CN()
+# The base URL for the website. Used for absolute link generation.
+_C.site.url = None
+# The root source directory for processing.
+_C.site.source_dir = None
+# The root directory for the static site output.
+_C.site.output_dir = None
 
 
-class TemplatesConfig(NamedTuple):
-    """Templates YAML sub-configuration options."""
+def get_default_cfg() -> CN:
+    """Provide a baseline configuration.
 
-    source_dir: str
-    default: str
-    blog: BlogTemplatesConfig
-    feeds: FeedTemplatesConfig
-
-
-class Config(NamedTuple):
-    """Site YAML configuration options."""
-
-    site: SiteConfig
-    templates: TemplatesConfig
-    build_count_file: Optional[str]
+    Returns:
+        A CfgNode compatible with this application.
+    """
+    return _C.clone()
 
 
-# Apply the NamedTuples to config.yml
-# FIXME: Handle missing keys in the config file
-def read_config(path: str) -> Config:
-    """Read in YAML configurations."""
-    if not os.path.exists(path):
-        raise FileNotFoundError(f'file "{path}" cannot be found')
-    with open(path, "r", encoding="utf8") as fh:
-        yaml: Dict[str, Any] = safe_load(fh)
-    return Config(
-        site=SiteConfig(
-            url=yaml["site"]["url"],
-            source_dir=yaml["site"]["source_dir"],
-            build_dir=yaml["site"]["build_dir"],
-        ),
-        templates=TemplatesConfig(
-            source_dir=yaml["templates"]["source_dir"],
-            default=yaml["templates"]["default"],
-            blog=BlogTemplatesConfig(
-                default=yaml["templates"]["blog"]["default"],
-                home=yaml["templates"]["blog"]["home"],
-                archives=yaml["templates"]["blog"]["archives"],
-                tags=yaml["templates"]["blog"]["tags"],
-            ),
-            feeds=FeedTemplatesConfig(
-                rss=yaml["templates"]["feeds"]["rss"],
-                rss_r=yaml["templates"]["feeds"]["rss_r"],
-                json=yaml["templates"]["feeds"]["json"],
-            ),
-        ),
-        build_count_file=yaml["build_count_file"],
-    )
+def load_config(path: Optional[str] = None) -> CN:
+    """Load a configuration and merge with the default.
+
+    Args:
+        path: Path to a config file to merge with the default.
+
+    Returns:
+        A CfgNode instance with default values plus any new
+        values overriding and extending the defaults.
+    """
+    base = get_default_cfg()
+    return base if path is None else base.merge_from_file(path)
+Î
