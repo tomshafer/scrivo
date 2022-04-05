@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 
-def find_version() -> str:
+def _find_version() -> str:
     with open("scrivo/__init__.py") as file:
         for line in file:
             if "__version__" in line:
@@ -15,7 +15,7 @@ def find_version() -> str:
 
 setup(
     name="scrivo",
-    version=find_version(),
+    version=_find_version(),
     author="Tom Shafer",
     author_email="contact@tshafer.com",
     description="A static website generator.",
@@ -34,5 +34,4 @@ setup(
         "snowballstemmer",
         "PyYAML",
     ],
-    scripts=["bin/sitesync"],
 )
