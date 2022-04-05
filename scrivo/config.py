@@ -44,4 +44,3 @@ def load_config(path: Optional[str] = None) -> CN:
     """
     base = get_default_cfg()
     return base if path is None else base.merge_from_file(path)
-Î
