@@ -39,9 +39,9 @@ def compile_site(source_dir: str, output_dir: str) -> None:
 
     """
     output_dir = ensure_dir_exists(output_dir)
+
     rsync(source_dir, output_dir)
 
-    # Run markdown against every markdown file
     pages = collect_pages(source_dir)
     render_pages(pages, source_dir, output_dir)
 
@@ -64,6 +64,7 @@ def render_pages(pages: list[page], src: str, dst: str) -> None:
 
     """
     # FIXME: Generating "output.html" next to "output/"
+    # NB: At this point, writing with concurrent.futures isn't worth it
     for page in pages:
         dpath = os.path.split(page.rebase(dst))[0] + ".html"
         with open(dpath, "w") as fout:
