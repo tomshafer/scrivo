@@ -7,4 +7,4 @@ some of the more complicated stuff can take a long time to load.
 
 from scrivo.config import load_config  # noqa: F401
 
-__version__ = "0.0.3.9002"
+__version__ = "0.0.3.9003"

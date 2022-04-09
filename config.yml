@@ -1,0 +1,4 @@
+site:
+  url: ""
+  source_dir: ~/Sites/Personal/www/source
+  output_dir: ./output

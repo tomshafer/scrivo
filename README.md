@@ -16,6 +16,25 @@ $ ./bin/dev.sh
 
 ## To do
 
+The idea, as I see it, is to have template inheritance.
+Everything uses the template "closest" to it in the hierarchy, so
+everything uses the main template unless it specifies something
+in its meta or unless there's a template closer to it. E.g.,
+there's a "main.html" template and a "blog/main.html" template.
+But there might be "index.html" templates for each, too, which
+we'd dispatch to because they have the same basename (sans
+extension).
+
+Number one, I think, is to move the Markdown parsing utility to
+its own file and see if we can parallelize it effectively to be
+even faster.
+
+Number two, maybe, is to simplify a lot of my types -- making
+them dataclasses or something.
+
+---
+
+
 - [ ] Add "clear all" functionality on regenerate
 - [ ] Update config?
 - [ ] Add debug section
