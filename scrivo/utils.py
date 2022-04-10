@@ -1,32 +1,12 @@
 """Miscellaneous utilities."""
 
 import logging
-import time
-from typing import Callable, Sized
+import os
+from typing import Sized
 
-__all__ = ["logtime", "get_package_version", "s"]
+log = logging.getLogger(__name__)
 
-
-def logtime(fn: Callable) -> Callable:
-    """Wrap a function with a performance logging statement.
-
-    Args:
-        fn (Callable): The function to be timed.
-
-    Returns:
-        Callable: The wrapped version of `fn`.
-
-    """
-    logger = logging.getLogger(__name__)
-    fname = fn.__name__
-
-    def wrap(*args, **kwargs):
-        timer_start = time.time()
-        out = fn(*args, **kwargs)
-        logger.info("%s() finished in %.03f sec", fname, time.time() - timer_start)
-        return out
-
-    return wrap
+__all__ = ["get_package_version", "s", "ensure_dir_exists"]
 
 
 class VersionNotFoundError(Exception):
@@ -66,3 +46,20 @@ def s(word: str, collection: Sized, suffix: str = "s") -> str:
 
     """
     return word + suffix * (len(collection) != 1)
+
+
+def ensure_dir_exists(dirpath: str) -> str:
+    """Create a directory if it doesn't already exist.
+
+    Args:
+        dirpath (str): The directory to create if not already existing.
+
+    Returns:
+        str: The absolute path to the target directory.
+
+    """
+    absdir = os.path.abspath(dirpath)
+    if not os.path.exists(absdir):
+        log.debug(f"Creating directory {absdir}")
+        os.mkdir(absdir)
+    return absdir

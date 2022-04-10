@@ -106,7 +106,7 @@ _parser = Markdown(
 )
 
 
-def md2html(source: str) -> tuple[str, dict]:
+def md2html(source: str) -> tuple[str, dict[str, Any]]:
     """Parse a Markdown document using our custom parser.
 
     Args:

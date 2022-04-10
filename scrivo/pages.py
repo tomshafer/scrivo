@@ -1,11 +1,16 @@
 """Processing and rendering individual pages."""
 
+import logging
 import os
+from collections import defaultdict
+from datetime import datetime
 from typing import Any, Optional
 
 from jinja2 import Environment, Template
 
 from scrivo.markdown import md2html
+
+log = logging.getLogger(__name__)
 
 
 class page:
@@ -23,7 +28,8 @@ class page:
         self.relpath = relpath
         with open(srcpath) as f:
             self.text = f.read()
-            self.html, self.meta = md2html(self.text)
+            self.html, meta = md2html(self.text)
+            self.meta = defaultdict(lambda: None, meta)
 
     def __repr__(self) -> str:
         """Represent a page object as a string.
@@ -56,6 +62,16 @@ class page:
         """
         return f"{os.path.splitext(self.relpath)[0]}.html"
 
+    @property
+    def date(self) -> datetime:
+        """Return page date metadata as a true datetime.
+
+        Returns:
+            datetime: The page's timestamp.
+
+        """
+        return datetime.strptime(self.meta["date"], "%Y-%m-%d %I:%M %p")
+
     def to_template_dict(self) -> dict[str, Any]:
         """Render page as a dict for templating.
 
@@ -78,7 +94,7 @@ class page:
         return os.path.abspath(os.path.join(base, self.relpath_html))
 
 
-def render_pages(pages: list[page], dst: str, templates: Environment) -> None:
+def render_pages(pages: list[page], dst: str, templates: Environment) -> list[str]:
     """Render individual markdown pages into the destination.
 
     Args:
@@ -86,11 +102,18 @@ def render_pages(pages: list[page], dst: str, templates: Environment) -> None:
         dst (str): Destination directory, for path manipulation.
         templates (Environment): Jinja template environment.
 
+    Returns:
+        list[str]: Relative paths of written HTML files.
+
     """
+    html_pages = []
     for page in pages:
         template = resolve_page_template(page, templates)
-        with open(page.destpath_html(dst), "w") as outf:
+        dest_html = page.destpath_html(dst)
+        with open(dest_html, "w") as outf:
             outf.write(page.render(template))
+            html_pages.append(dest_html)
+    return html_pages
 
 
 def resolve_page_template(page: page, templates: Environment) -> Template:
@@ -114,6 +137,7 @@ def resolve_page_template(page: page, templates: Environment) -> Template:
 
         * `meta["template"]`, if specified
         * work/physics/main.html
+        * work/physics.html
         * work/main.html
         * main.html
 
@@ -126,10 +150,20 @@ def resolve_page_template(page: page, templates: Environment) -> Template:
     # Harder path: Walk backwards to find the parent template, named <dir>/main.html
     base = os.path.dirname(page.relpath_html)
     template_set = set(templates.list_templates())
+
+    matched_template = "main.html"
     while True:
+        # /path/main.html
         test_path = os.path.join(base, "main.html")
         if test_path in template_set:
-            return templates.get_template(test_path)
+            matched_template = test_path
+            break
+
+        # /path.html
+        test_path = f"{base}.html"
+        if test_path in template_set:
+            matched_template = test_path
+            break
 
         # Remove the trailing directory: "/<dir>". Returns -1 if none available.
         slash_idx = base.rfind("/")
@@ -137,4 +171,28 @@ def resolve_page_template(page: page, templates: Environment) -> Template:
             break
         base = base[:slash_idx]
 
-    return templates.get_template("main.html")
+    result = templates.get_template(matched_template)
+    log.debug(f"Mapped {page} => {result}")
+    return result
+
+
+def collect_blog_post_pages(
+    pages: list[page],
+    include_drafts: bool = False,
+) -> list[page]:
+    """Provide a list of blog posts only.
+
+    Args:
+        pages (list[page]): All pages tracked by the software.
+        include_drafts (bool): Whether to include draft posts.
+
+    Returns:
+        list[page]: FIltered list of posts.
+
+    """
+    return [
+        page
+        for page in pages
+        if page.relpath.startswith("blog/")
+        and (include_drafts or not page.meta["draft"])
+    ]

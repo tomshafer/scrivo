@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 
 from scrivo.pages import page
 from scrivo.rendering import REGISTRY
-from scrivo.utils import s
+from scrivo.utils import ensure_dir_exists, s
 
 log = logging.getLogger(__name__)
 
@@ -73,20 +73,3 @@ def rsync(src: str, out: str) -> None:
     command = shlex.split(f'rsync -rL --delete --exclude=".*" "{src}/" "{out}/"')
     log.debug(f"rsync command = `{' '.join(command)}`")
     sp.run(command)
-
-
-def ensure_dir_exists(dirpath: str) -> str:
-    """Create a directory if it doesn't already exist.
-
-    Args:
-        dirpath (str): The directory to create if not already existing.
-
-    Returns:
-        str: The absolute path to the target directory.
-
-    """
-    absdir = os.path.abspath(dirpath)
-    if not os.path.exists(absdir):
-        log.info(f"Creating directory {absdir}")
-        os.mkdir(absdir)
-    return absdir
