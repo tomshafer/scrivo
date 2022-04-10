@@ -8,7 +8,8 @@ import subprocess as sp
 from jinja2 import Environment, FileSystemLoader
 from tqdm.auto import tqdm
 
-from scrivo.pages import page, render_pages
+from scrivo.pages import page
+from scrivo.rendering import REGISTRY
 from scrivo.utils import s
 
 log = logging.getLogger(__name__)
@@ -28,15 +29,10 @@ def compile_site(source_dir: str, output_dir: str, template_dir: str) -> None:
     rsync(source_dir, output_dir)
 
     pages = collect_pages(source_dir)
-    render_pages(pages, output_dir, templates)
 
-    # Generate various programmatic pages
-    # Some kind of registry?
-    # Feeds
-    # Tags
-    # Archives
-    # Blog index
-    #
+    for target in REGISTRY:
+        log.debug(f'Dispatching job "{target}"')
+        REGISTRY[target](pages, output_dir, templates)
 
 
 def collect_pages(

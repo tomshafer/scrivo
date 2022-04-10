@@ -79,7 +79,6 @@ def present_cli(
     log.info(f"{source_dir = }")
     log.info(f"{output_dir = }")
     log.info(f"{template_dir = }")
-    log.info(f"{debug = }")
 
     log.debug("Debugging messages are enabled.")
 
