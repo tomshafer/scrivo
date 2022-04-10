@@ -19,6 +19,14 @@ log = logging.getLogger("scrivo.cli")
     help="Blog source directory.",
 )
 @click.option(
+    "--templates",
+    "-t",
+    "template_dir",
+    required=True,
+    type=click.Path(exists=True, file_okay=False),
+    help="Blog template directory.",
+)
+@click.option(
     "--output",
     "-o",
     "output_dir",
@@ -27,7 +35,12 @@ log = logging.getLogger("scrivo.cli")
     help="Blog destination directory.",
 )
 @click.option("--debug", "debug", is_flag=True, help="Enable debugging messages.")
-def _show_cli(source_dir: str, output_dir: str, debug: bool = False) -> None:
+def _show_cli(
+    source_dir: str,
+    output_dir: str,
+    template_dir: str,
+    debug: bool = False,
+) -> None:
     if debug:
         logging.getLogger("scrivo").setLevel("DEBUG")
     log.info(60 * "*")
@@ -35,9 +48,10 @@ def _show_cli(source_dir: str, output_dir: str, debug: bool = False) -> None:
     log.info(60 * "*")
     log.info(f"{source_dir = }")
     log.info(f"{output_dir = }")
+    log.info(f"{template_dir = }")
     log.info(f"{debug = }")
     log.debug("Debugging messages are enabled.")
-    compile.compile_site(source_dir=source_dir, output_dir=output_dir)
+    compile.compile_site(source_dir, output_dir, template_dir)
 
 
 if __name__ == "__main__":
