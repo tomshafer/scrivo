@@ -18,3 +18,15 @@ def logtime(fn):
         return out
 
     return wrap
+
+
+class VersionNotFoundError(Exception):
+    pass
+
+
+def get_package_version(init_path: str = "scrivo/__init__.py") -> str:
+    with open(init_path) as file:
+        for line in file:
+            if "__version__" in line:
+                return line.strip().split("=").pop().strip('" ')
+    raise VersionNotFoundError("Could not find version number")

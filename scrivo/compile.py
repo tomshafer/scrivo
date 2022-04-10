@@ -84,6 +84,9 @@ class page:
         return os.path.abspath(os.path.join(base, self.relpath_html))
 
 
+RENDER_REGISTRY = dict()
+
+
 def compile_site(source_dir: str, output_dir: str, template_dir: str) -> None:
     """Build and export a static website.
 
@@ -95,12 +98,13 @@ def compile_site(source_dir: str, output_dir: str, template_dir: str) -> None:
     """
     templates = Environment(loader=FileSystemLoader(template_dir))
     output_dir = ensure_dir_exists(output_dir)
-
     rsync(source_dir, output_dir)
 
     pages = collect_pages(source_dir)
     render_pages(pages, output_dir, templates)
 
+    for target in RENDER_REGISTRY:
+        log.info("Rendering...")
     # Generate various programmatic pages
     # Some kind of registry?
     # Feeds

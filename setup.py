@@ -2,22 +2,11 @@
 
 from setuptools import find_packages, setup
 
-
-def _find_version() -> str:
-    class VersionNotFoundError(Exception):
-        pass
-
-    with open("scrivo/__init__.py") as file:
-        for line in file:
-            if "__version__" in line:
-                return line.strip().split("=").pop().strip('" ')
-
-    raise VersionNotFoundError("Could not find version number")
-
+from scrivo.utils import get_package_version
 
 setup(
     name="scrivo",
-    version=_find_version(),
+    version=get_package_version(),
     author="Tom Shafer",
     author_email="contact@tshafer.com",
     description="A static website generator.",
