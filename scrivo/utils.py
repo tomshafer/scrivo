@@ -26,11 +26,12 @@ def get_package_version(path: str = "scrivo/__init__.py") -> str:
         The current package version string.
 
     """
-    with open(path) as file:
-        for line in file:
-            if "__version__" in line:
-                return line.strip().split("=").pop().strip('" ')
-    raise VersionNotFoundError("Could not find version number")
+    try:
+        from scrivo import __version__
+
+        return __version__
+    except ImportError:
+        raise VersionNotFoundError("Could not find version number")
 
 
 def s(word: str, collection: Sized, suffix: str = "s") -> str:

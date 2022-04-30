@@ -5,4 +5,5 @@ We might want to do this (OK, we _do_ want to do this) because
 some of the more complicated stuff can take a long time to load.
 """
 
-__version__ = "0.0.9.9005"
+__version_tuple__ = (0, 0, 9, 9006)
+__version__ = ".".join(map(str, __version_tuple__))
