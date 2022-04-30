@@ -15,7 +15,6 @@ log = logging.getLogger("scrivo.cli")
     "--source",
     "-s",
     "source_dir",
-    required=True,
     type=click.Path(exists=True, file_okay=False),
     help="Blog source directory.",
 )
@@ -23,7 +22,6 @@ log = logging.getLogger("scrivo.cli")
     "--templates",
     "-t",
     "template_dir",
-    required=True,
     type=click.Path(exists=True, file_okay=False),
     help="Blog template directory.",
 )
@@ -31,12 +29,12 @@ log = logging.getLogger("scrivo.cli")
     "--output",
     "-o",
     "output_dir",
-    required=True,
     type=click.Path(file_okay=False),
     help="Blog destination directory.",
 )
 @click.option(
     "--debug",
+    "-d",
     "debug",
     is_flag=True,
     help="Enable debugging messages.",
@@ -64,6 +62,11 @@ def present_cli(
         debug (bool): Whether to enable debug logging.
         show_version (bool): Print the package version string and quit.
 
+    Raises:
+        ValueError: If mandatory arguments are missing. Doing
+            things this way let us pass arguments like "--version"
+            without failing the argument check.
+
     """
     if show_version:
         print(f"Scrivo CLI, package version {get_package_version()}")
@@ -71,6 +74,12 @@ def present_cli(
 
     if debug:
         logging.getLogger("scrivo").setLevel("DEBUG")
+
+    # https://stackoverflow.com/a/2991341
+    ll = locals()
+    for arg in ("source_dir", "output_dir", "template_dir"):
+        if ll[arg] is None:
+            raise ValueError(f"function argument {arg} cannot be missing")
 
     log.info(60 * "*")
     log.info("**** Beginning scrivo CLI")

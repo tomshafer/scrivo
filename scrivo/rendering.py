@@ -76,17 +76,16 @@ def render_archive(
     template = templates.get_template("blog/archive.html")  # FIXME
     post_dates = {p.date.date() for p in collect_blog_post_pages(pages)}
 
-    log.info("Rendering blog/<year>/index.html")
     years = {d.year for d in post_dates}
     for year in years:
         subset = [p for p in blog_posts if p.date.year == year]
         ensure_dir_exists(os.path.join(outdir, f"blog/{year}"))
         target = f"blog/{year}/index.html"
+        log.info(f"Rendering {target}")
         with open(os.path.join(outdir, target), "w") as outf:
             outf.write(template.render(posts=subset))
             rendered_pages += [target]
 
-    log.info("Rendering blog/<year>/<month>/index.html")
     year_months = {date(year=d.year, month=d.month, day=1) for d in post_dates}
     for ym in year_months:
         year, month = ym.year, ym.month
@@ -96,6 +95,7 @@ def render_archive(
             if page.date.year == year and page.date.month == month
         ]
         target = f"blog/{year}/{month:02d}/index.html"
+        log.info(f"Rendering {target}")
         ensure_dir_exists(os.path.join(outdir, os.path.dirname(target)))
         with open(os.path.join(outdir, target), "w") as outf:
             outf.write(template.render(posts=subset))
@@ -120,8 +120,6 @@ def render_blog_tag_pages(
         list[str]: List of (relative paths for) pages generated.
 
     """
-    log.info("Rendering blog/tags/index.html")
-
     posts = collect_blog_post_pages(pages)
     template = templates.get_template("blog/tags.html")
 
@@ -133,6 +131,7 @@ def render_blog_tag_pages(
             tagged_posts[tag].append(post)
 
     target = "blog/tags/index.html"
+    log.info(f"Rendering {target}")
     ensure_dir_exists(os.path.join(outdir, os.path.dirname(target)))
     with open(os.path.join(outdir, target), "w") as outf:
         outf.write(template.render(posts=posts))
@@ -156,11 +155,11 @@ def render_json_feed(
         list[str]: List of (relative paths for) pages generated.
 
     """
-    log.info("Rendering blog/feed.json")
     template = templates.get_template("feeds/feed.json")
     posts = collect_blog_post_pages(pages)
     ensure_dir_exists(os.path.join(outdir, "blog"))
     target = "blog/feed.json"
+    log.info(f"Rendering {target}")
     with open(os.path.join(outdir, target), "w") as outf:
         outf.write(template.render(posts=posts))
 
@@ -189,22 +188,14 @@ def render_xml_feeds(
     posts = collect_blog_post_pages(pages)
     ensure_dir_exists(os.path.join(outdir, "blog"))
     for feed in feeds:
-        log.info(f"Rendering blog/{feed}")
         template = templates.get_template(f"feeds/{feed}")
         target = f"blog/{feed}"
+        log.info(f"Rendering {target}")
         with open(os.path.join(outdir, target), "w") as outf:
             outf.write(template.render(posts=posts))
             rendered_pages += [target]
 
     return rendered_pages
-
-
-# def generate_sitemap(
-#     pages: list[page],
-#     outdir: str,
-#     templates: Environment,
-# ) -> None:
-#     pass
 
 
 REGISTRY["Individual pages"] = render_pages
