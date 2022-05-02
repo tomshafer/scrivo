@@ -112,7 +112,7 @@ def render_pages(pages: list[page], dst: str, templates: Environment) -> list[st
         dest_html = page.destpath_html(dst)
         with open(dest_html, "w") as outf:
             outf.write(page.render(template))
-            html_pages.append(dest_html)
+            html_pages.append(page.relpath_html)
     return html_pages
 
 

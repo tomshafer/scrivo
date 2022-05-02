@@ -91,7 +91,7 @@ def present_cli(
 
     log.debug("Debugging messages are enabled.")
 
-    compile.compile_site(source_dir, output_dir, template_dir)
+    compile.compile_site(source_dir, output_dir, "https://tshafer.com", template_dir)
 
 
 if __name__ == "__main__":

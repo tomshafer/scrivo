@@ -15,12 +15,18 @@ from scrivo.utils import ensure_dir_exists, s
 log = logging.getLogger(__name__)
 
 
-def compile_site(source_dir: str, output_dir: str, template_dir: str) -> None:
+def compile_site(
+    source_dir: str,
+    output_dir: str,
+    website_root: str,
+    template_dir: str,
+) -> None:
     """Build and export a static website.
 
     Args:
         source_dir (str): Static site source directory.
         output_dir (str): Output directory.
+        website_root (str): URL root for the domain.
         template_dir (str): Jinja HTML template directory.
 
     """
@@ -30,9 +36,12 @@ def compile_site(source_dir: str, output_dir: str, template_dir: str) -> None:
 
     pages = collect_pages(source_dir)
 
+    rendered_pages = []
     for target in REGISTRY:
         log.debug(f'Dispatching job "{target}"')
-        REGISTRY[target](pages, output_dir, templates)
+        rendered_pages += REGISTRY[target](pages, output_dir, templates)
+
+    write_sitemap(rendered_pages, output_dir, website_root)
 
 
 def collect_pages(
@@ -73,3 +82,30 @@ def rsync(src: str, out: str) -> None:
     command = shlex.split(f'rsync -rL --delete --exclude=".*" "{src}/" "{out}/"')
     log.debug(f"rsync command = `{' '.join(command)}`")
     sp.run(command)
+
+
+def write_sitemap(urls: list[str], basedir: str, webroot: str) -> None:
+    """Write a Google-compatible sitemap text file.
+
+    The URLs come from two sources:
+
+        1. Generated/rendered pages
+        2. A crawl of select rsync'd files (e.g., PDFs)
+
+    Args:
+        urls: List of rendered URLs during compilation
+        basedir: Output directory root
+        webroot: Base URL for the website
+
+    """
+    sitemap_urls = []
+    for url in urls:
+        clean_url = url.removesuffix(".html").removesuffix("index")
+        sitemap_urls += [f"{webroot.rstrip('/')}/{clean_url}"]
+    for pwd, _, files in os.walk(basedir):
+        for file in filter(lambda x: x.lower().endswith(".pdf"), files):
+            clean_url = os.path.relpath(os.path.join(pwd, file), basedir)
+            sitemap_urls += [f"{webroot.rstrip('/')}/{clean_url}"]
+
+    with open(os.path.join(basedir, "sitemap.txt"), "w") as f:
+        f.writelines(map(lambda u: u + "\n", sorted(sitemap_urls)))
