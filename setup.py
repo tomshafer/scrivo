@@ -25,14 +25,15 @@ setup(
     packages=find_packages(),
     python_requires=">=3.9",
     install_requires=[
+        "bs4",
         "jinja2",
         "markdown",
-        "python-markdown-math",
         "numpy",
-        "bs4",
+        "pygments",
+        "python-markdown-math",
+        "PyYAML",
         "scikit-learn",
         "snowballstemmer",
-        "PyYAML",
     ],
     scripts=["bin/sitesync"],
 )
