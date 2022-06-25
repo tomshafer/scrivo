@@ -265,15 +265,14 @@ def compile_site(
         f.write(template.render(posts=blogs))
 
     # RSS feeds
-    zone = get_tz()
     with open(os.path.join(config.site.build_dir, "blog", "rss.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss)
-        f.write(template.render(posts=blogs, build_date=datetime.now(tz=zone)))
+        f.write(template.render(posts=blogs, build_date=datetime.now()))
 
     rp = (b for b in blogs if "r-programming" in b.meta["tags"])
     with open(os.path.join(config.site.build_dir, "blog", "rss-r.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss_r)
-        f.write(template.render(posts=rp, build_date=datetime.now(tz=zone)))
+        f.write(template.render(posts=rp, build_date=datetime.now()))
     logger.info("Rendered feeds in %.03f s", time.time() - timer_start)
 
     # Sitemap

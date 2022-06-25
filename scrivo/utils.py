@@ -1,10 +1,9 @@
 """Miscellaneous utilities."""
 
 import logging
-import shlex
-import subprocess as sp
 import time
-from datetime import timedelta, timezone
+from datetime import timezone
+from zoneinfo import ZoneInfo
 
 __all__ = ["logtime"]
 
@@ -24,6 +23,5 @@ def logtime(fn):
 
 
 def get_tz() -> timezone:
-    """Get the current timezone using 'date'"""
-    zone = sp.run(shlex.split("date '+%z'"), stdout=sp.PIPE).stdout.strip()
-    return timezone(offset=timedelta(hours=int(zone[:3]), minutes=int(zone[3:])))
+    """Set timezone to Eastern."""
+    return ZoneInfo("America/New_York")
