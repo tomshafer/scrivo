@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader, Template
 from markdown import Markdown
 
 from scrivo.markdown import YAMLMetadataExtension
+from scrivo.utils import get_tz
 
 __all__ = ["Page", "load_templates_from_dir"]
 
@@ -50,6 +51,21 @@ def get_default(dct, key, default=None, fn=None):
     return value
 
 
+def parse_date(x: str) -> datetime:
+    """Parse a date string so it is timezone aware.
+
+    Args:
+        x: A date string.
+
+    Returns:
+        The timezone-aware datetime object.
+
+    """
+    date = datetime.strptime(x, "%Y-%m-%d %I:%M %p")
+    tz = get_tz()
+    return date.replace(tzinfo=tz)
+
+
 def set_metadata(raw_meta: Dict) -> Dict[str, Any]:
     """Ensure a Page has the minimum expected metadata.
 
@@ -78,7 +94,7 @@ def set_metadata(raw_meta: Dict) -> Dict[str, Any]:
             dct=raw_meta,
             key="date",
             default=None,
-            fn=lambda d: datetime.strptime(d, "%Y-%m-%d %I:%M %p"),
+            fn=parse_date,
         ),
         "tags": get_default(raw_meta, "tags", ["miscellaneous"]),
         "template": get_default(raw_meta, "template", None),

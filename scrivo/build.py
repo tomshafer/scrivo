@@ -12,7 +12,7 @@ from scrivo.blog import render_archives_page, render_tags_page
 from scrivo.config import Config
 from scrivo.ml import page_similarities
 from scrivo.page import Page, load_templates_from_dir
-from scrivo.utils import logtime
+from scrivo.utils import get_tz, logtime
 
 __all__ = [
     "increment_counter",
@@ -265,14 +265,15 @@ def compile_site(
         f.write(template.render(posts=blogs))
 
     # RSS feeds
+    zone = get_tz()
     with open(os.path.join(config.site.build_dir, "blog", "rss.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss)
-        f.write(template.render(posts=blogs, build_date=datetime.now()))
+        f.write(template.render(posts=blogs, build_date=datetime.now(tz=zone)))
 
     rp = (b for b in blogs if "r-programming" in b.meta["tags"])
     with open(os.path.join(config.site.build_dir, "blog", "rss-r.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss_r)
-        f.write(template.render(posts=rp, build_date=datetime.now()))
+        f.write(template.render(posts=rp, build_date=datetime.now(tz=zone)))
     logger.info("Rendered feeds in %.03f s", time.time() - timer_start)
 
     # Sitemap
