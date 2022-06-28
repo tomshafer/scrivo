@@ -17,11 +17,7 @@ setup(
         "jinja2",
         "markdown",
         "python-markdown-math",
-        "numpy",
         "bs4",
-        "scikit-learn",
-        "snowballstemmer",
         "PyYAML",
-        "yacs",
     ],
 )

@@ -9,7 +9,7 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-__all__ = ["YAMLExtension", "YAMLPreprocessor"]
+__all__ = ["YAMLExtension", "YAMLPreprocessor", "md2html"]
 
 log = logging.getLogger(__name__)
 

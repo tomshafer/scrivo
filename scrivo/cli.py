@@ -26,6 +26,14 @@ log = logging.getLogger("scrivo.cli")
     help="Blog template directory.",
 )
 @click.option(
+    "--url",
+    "-u",
+    "site_url",
+    type=str,
+    required=True,
+    help="Site root URL.",
+)
+@click.option(
     "--output",
     "-o",
     "output_dir",
@@ -50,6 +58,7 @@ def present_cli(
     source_dir: str,
     output_dir: str,
     template_dir: str,
+    site_url: str,
     debug: bool = False,
     show_version: bool = False,
 ) -> None:
@@ -59,6 +68,7 @@ def present_cli(
         source_dir (str): Source directory with Markdown files.
         output_dir (str): Destination directory.
         template_dir (str): Templates directory.
+        site_url (str): Root URL for the site.
         debug (bool): Whether to enable debug logging.
         show_version (bool): Print the package version string and quit.
 
@@ -88,10 +98,11 @@ def present_cli(
     log.info(f"{source_dir = }")
     log.info(f"{output_dir = }")
     log.info(f"{template_dir = }")
+    log.info(f"{site_url = }")
 
     log.debug("Debugging messages are enabled.")
 
-    compile.compile_site(source_dir, output_dir, "https://tshafer.com", template_dir)
+    compile.compile_site(source_dir, output_dir, site_url, template_dir)
 
 
 if __name__ == "__main__":
