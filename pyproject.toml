@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "scrivo"
+version = "0.0.9"
+description = ""
+authors = ["Tom Shafer <tom@tshafer.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+tqdm = "^4.64.1"
+jinja2 = "^3.1.2"
+markdown = "^3.4.1"
+pyyaml = "^6.0"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.0.0"
+mypy = "^1.0.0"
+black = "^23.1.0"
+isort = "^5.12.0"
+types-markdown = "^3.4.2.3"
+types-pyyaml = "^6.0.12.5"
+types-tqdm = "^4.64.7.12"
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

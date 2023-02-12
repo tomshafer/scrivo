@@ -4,13 +4,16 @@ import logging
 import os
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from jinja2 import Environment, Template
 
 from scrivo.markdown import md2html
 
 log = logging.getLogger(__name__)
+
+
+__all__ = ["page"]
 
 
 class page:
@@ -40,57 +43,26 @@ class page:
         """
         return f"<page({self.relpath})>"
 
-    def render(self, tmpl: Optional[Template] = None) -> str:
-        """Render a page as pure HTML or into a Jinja template.
-
-        Args:
-            tmpl (Template, optional): A Jinja template.
-
-        Returns:
-            str: The rendered page contents.
-
-        """
+    def render(self, tmpl: Template | None = None) -> str:
+        """Render a page as pure HTML or into a Jinja template."""
         return tmpl.render(**self.to_template_dict()) if tmpl is not None else self.html
 
     @property
     def relpath_html(self) -> str:
-        """Construct the relative path of a putative HTML file for this page.
-
-        Returns:
-            str: The '.html' equivalent of `self.relpath`.
-
-        """
+        """Construct the relative path of a putative HTML file for this page."""
         return f"{os.path.splitext(self.relpath)[0]}.html"
 
     @property
     def date(self) -> datetime:
-        """Return page date metadata as a true datetime.
-
-        Returns:
-            datetime: The page's timestamp.
-
-        """
+        """Return page date metadata as a true datetime."""
         return datetime.strptime(self.meta["date"], "%Y-%m-%d %I:%M %p")
 
     def to_template_dict(self) -> dict[str, Any]:
-        """Render page as a dict for templating.
-
-        Returns:
-            dict[str, Any]: Union of the rendered page contents and metadata.
-
-        """
+        """Unify metadata and page content."""
         return {"content": self.html} | self.meta
 
     def destpath_html(self, base: str) -> str:
-        """Compute a destination HTML path given a new base.
-
-        Args:
-            base (str): The base of the new directory tree.
-
-        Returns:
-            str: New HTML-extension absolute path.
-
-        """
+        """Compute a destination HTML path given a new base."""
         return os.path.abspath(os.path.join(base, self.relpath_html))
 
 
@@ -143,7 +115,7 @@ def resolve_page_template(page: page, templates: Environment) -> Template:
 
     """
     # Easy path: We've specified the template in metadata
-    template: Optional[str] = page.meta.get("template")
+    template: str | None = page.meta.get("template")
     if template is not None:
         return templates.get_template(template)
 

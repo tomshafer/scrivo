@@ -9,30 +9,24 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-__all__ = ["YAMLExtension", "YAMLPreprocessor", "md2html"]
+__all__ = ["md2html"]
 
 log = logging.getLogger(__name__)
 
 
+class YAMLSearchError(Exception):
+    pass
+
+
+class MarkdownWithMetadata(Markdown):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.metadata: dict[str, Any] = {}
+
+
 class YAMLPreprocessor(Preprocessor):
-    """Parse YAML metadata at the top of a Markdown document."""
-
     def run(self, lines: list[str]) -> list[str]:
-        """Run the Preprocessor to extract any YAML block.
-
-        Args:
-            lines (list[str]): the lines of the input Markdown
-
-        Returns:
-            list[str]: the original Markdown minus the YAML content
-
-            NB: This also has side-effects, setting 'self.md.metadata' to the
-            extracted YAML content.
-
-        Raises:
-            ValueError: If we cannot find the end ofa YAML header block.
-
-        """
+        """Extract and parse a YAML block at the top of a file."""
         RE_YAML = re.compile(r"^(-|\.){3}$")
 
         yaml_start, yaml_end = None, None
@@ -59,28 +53,24 @@ class YAMLPreprocessor(Preprocessor):
             new_lines = lines[(yaml_end + 1) :]
             metadata = yaml.safe_load("\n".join(lines[(yaml_start + 1) : yaml_end]))
         else:
-            raise ValueError("did not find the end of the YAML header block")
+            raise YAMLSearchError("did not find the end of the YAML header block")
 
         # lowercase the keys
-        self.md.metadata = {k.lower(): v for k, v in metadata.items()}
-
+        # setattr() gets around typing issues with .metadata
+        setattr(self.md, "metadata", {k.lower(): v for k, v in metadata.items()})
         return new_lines
 
 
 class YAMLExtension(Extension):
-    """Parse YAML metadata at the top of a Markdown document."""
-
     def extendMarkdown(self, md: Markdown) -> None:
-        """Register our metadata preprocessor at low priority.
-
-        Args:
-            md: Markdown parser.
-
-        """
+        """Register our metadata preprocessor at low priority."""
         md.preprocessors.register(YAMLPreprocessor(md), "yaml", 1)
 
 
-_parser = Markdown(
+# All docs share a parser, defined here ------------------------------
+
+
+_parser = MarkdownWithMetadata(
     output_format="html",
     tab_length=2,
     extensions=[
@@ -107,18 +97,8 @@ _parser = Markdown(
 
 
 def md2html(source: str) -> tuple[str, dict[str, Any]]:
-    """Parse a Markdown document using our custom parser.
-
-    Args:
-        source (str): the Markdown source text
-
-    Returns:
-        tuple(str, dict):
-            1. the converted output as a string
-            2. any extracted metadata as a dict
-
-    """
+    """Parse a Markdown document into HTML and metadata."""
     _parser.reset()  # Reset or we'll have leftover garbage from the previous file
     html = _parser.convert(source)
-    meta: dict[str, Any] = _parser.metadata  # type: ignore
+    meta: dict[str, Any] = _parser.metadata
     return html, meta

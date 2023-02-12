@@ -6,59 +6,33 @@ from typing import Sized
 
 log = logging.getLogger(__name__)
 
-__all__ = ["get_package_version", "s", "ensure_dir_exists"]
+
+__all__ = ["ensure_dir_exists", "s"]
+
+
+# Custom package exceptions ------------------------------------------
 
 
 class VersionNotFoundError(Exception):
     pass
 
 
-def get_package_version(path: str = "scrivo/__init__.py") -> str:
-    """Find and return the package version.
-
-    Args:
-        path: Path to the Python file with the version string.
-
-    Raises:
-        VersionNotFoundError: If the version string can't be found.
-
-    Returns:
-        The current package version string.
-
-    """
-    try:
-        from scrivo import __version__
-
-        return __version__
-    except ImportError:
-        raise VersionNotFoundError("Could not find version number")
+# Utility functions --------------------------------------------------
 
 
 def s(word: str, collection: Sized, suffix: str = "s") -> str:
     """Pluralize a word based on collection size.
 
     Args:
-        word (str): The unit of measure ot be pluralized.
-        collection (Sized): The collection to measure for pluralization.
-        suffix (str): Optional suffix to atttach if is needed.
-
-    Returns:
-        str: A pluralized version of `word` if needed.
-
+        word: Unit of measure to be pluralized
+        collection: What to measure for pluralization
+        suffix: Suffix to attach to token
     """
     return word + suffix * (len(collection) != 1)
 
 
 def ensure_dir_exists(dirpath: str) -> str:
-    """Create a directory if it doesn't already exist.
-
-    Args:
-        dirpath (str): The directory to create if not already existing.
-
-    Returns:
-        str: The absolute path to the target directory.
-
-    """
+    """Create a directory if it doesn't already exist."""
     absdir = os.path.abspath(dirpath)
     if not os.path.exists(absdir):
         log.debug(f"Creating directory {absdir}")

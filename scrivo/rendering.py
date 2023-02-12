@@ -13,8 +13,10 @@ from scrivo.utils import ensure_dir_exists
 
 log = logging.getLogger(__name__)
 
-# The registry tracks the various jobs needed to build the blog
-REGISTRY: dict[str, Callable[[list[page], str, Environment], list[str]]] = {}
+__all__ = ["REGISTRY"]
+
+
+# Rendering jobs -----------------------------------------------------
 
 
 def render_blog_index(
@@ -197,6 +199,12 @@ def render_xml_feeds(
 
     return rendered_pages
 
+
+# Build job registry -------------------------------------------------
+
+
+# The registry tracks the various jobs needed to build the blog
+REGISTRY: dict[str, Callable[[list[page], str, Environment], list[str]]] = {}
 
 REGISTRY["Individual pages"] = render_pages
 REGISTRY["Blog index"] = render_blog_index

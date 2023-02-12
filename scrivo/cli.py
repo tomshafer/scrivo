@@ -1,13 +1,15 @@
-"""Command-line interface for scrivo."""
+"""Provide a command-line interface."""
 
 import logging
 
 import click
 
-from scrivo import compile
+from scrivo.compile import compile_site
 from scrivo.utils import get_package_version
 
-log = logging.getLogger("scrivo.cli")
+log = logging.getLogger(__name__)
+
+__all__ = ["present_cli"]
 
 
 @click.command(context_settings={"help_option_names": ("-h", "--help")})
@@ -65,17 +67,12 @@ def present_cli(
     """Present a CLI for the scrivo tool.
 
     Args:
-        source_dir (str): Source directory with Markdown files.
-        output_dir (str): Destination directory.
-        template_dir (str): Templates directory.
-        site_url (str): Root URL for the site.
-        debug (bool): Whether to enable debug logging.
-        show_version (bool): Print the package version string and quit.
-
-    Raises:
-        ValueError: If mandatory arguments are missing. Doing
-            things this way let us pass arguments like "--version"
-            without failing the argument check.
+        source_dir: Source directory containing Markdown files
+        output_dir: Destination directory
+        template_dir: Templates directory
+        site_url: Root URL for the site
+        debug: Whether to enable debug logging
+        show_version: Print the package version string and quit
 
     """
     if show_version:
@@ -101,10 +98,4 @@ def present_cli(
     log.info(f"{site_url = }")
 
     log.debug("Debugging messages are enabled.")
-
-    compile.compile_site(source_dir, output_dir, site_url, template_dir)
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level="INFO", format="{message:s}", style="{")
-    present_cli()
+    compile_site(source_dir, output_dir, site_url, template_dir)

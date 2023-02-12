@@ -1,6 +1,8 @@
 __pycache__
+.DS_Store
 .mypy_cache
 .vscode
 *.egg-info
+output
+templates
 venv
-output/
