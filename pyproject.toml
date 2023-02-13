@@ -1,24 +1,24 @@
 [tool.poetry]
 name = "scrivo"
-version = "0.1.0-1"
-description = ""
+version = "0.1.0"
+description = "A static website generator."
 authors = ["Tom Shafer <tom@tshafer.com>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-tqdm = "^4.64.1"
 jinja2 = "^3.1.2"
 markdown = "^3.4.1"
 pyyaml = "^6.0"
 python-markdown-math = "^0.8"
 
 [tool.poetry.group.dev.dependencies]
-flake8 = "^6.0.0"
-mypy = "^1.0.0"
 black = "^23.1.0"
+flake8 = "^6.0.0"
 isort = "^5.12.0"
+mypy = "^1.0.0"
+pyinstrument = "^4.4.0"
 types-markdown = "^3.4.2.3"
 types-pyyaml = "^6.0.12.5"
 types-tqdm = "^4.64.7.12"

@@ -8,11 +8,10 @@ from functools import reduce
 from operator import add
 
 from jinja2 import Environment, FileSystemLoader
-from tqdm.auto import tqdm
 
 from scrivo.pages import page
 from scrivo.rendering import REGISTRY
-from scrivo.utils import ensure_dir_exists, s
+from scrivo.utils import ensure_dir_exists, s, timer
 
 log = logging.getLogger(__name__)
 
@@ -32,13 +31,14 @@ def compile_site(
         template_dir: Jinja HTML template directory
 
     """
-    tmpldir = Environment(loader=FileSystemLoader(template_dir))
-    outdir = ensure_dir_exists(output_dir)
-    rsync(source_dir, outdir)
+    with timer(logging.WARNING, log, "Generation completed in"):
+        tmpldir = Environment(loader=FileSystemLoader(template_dir))
+        outdir = ensure_dir_exists(output_dir)
+        rsync(source_dir, outdir)
 
-    pages = collect_pages(source_dir)
-    renders = reduce(add, (fn(pages, outdir, tmpldir) for fn in REGISTRY.values()))
-    write_sitemap(renders, outdir, website_root)
+        pages = collect_pages(source_dir)
+        renders = reduce(add, (fn(pages, outdir, tmpldir) for fn in REGISTRY.values()))
+        write_sitemap(renders, outdir, website_root)
 
 
 def collect_pages(source_dir: str, exts: tuple[str, ...] = ("md",)) -> list[page]:
@@ -49,17 +49,18 @@ def collect_pages(source_dir: str, exts: tuple[str, ...] = ("md",)) -> list[page
         exts: File extensions to treat as Markdown
 
     """
-    paths = [
-        os.path.abspath(os.path.join(pwd, file))
-        for pwd, _, files in os.walk(source_dir)
-        for file in filter(lambda f: f.lower().endswith(exts), files)
-    ]
-    pages = [
-        page(path, os.path.relpath(path, source_dir))
-        for path in tqdm(paths, unit="pg", desc="Rendering Markdown")
-    ]
+    with timer(logger=log, silent=True) as tm:
+        pages = [
+            page(path, os.path.relpath(path, source_dir))
+            for pwd, _, files in os.walk(source_dir)
+            for file in filter(lambda f: f.lower().endswith(exts), files)
+            for path in (os.path.abspath(os.path.join(pwd, file)),)
+        ]
 
-    log.info(f"Collected and processed {len(pages)} {s('page', pages)}")
+    n = len(pages)
+    r = n / tm.elapsed
+    log.info(f"Processed {n} {s('page', n)} in {tm} ({r:.1f} pg/s)")
+
     return pages
 
 
