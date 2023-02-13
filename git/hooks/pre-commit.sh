@@ -7,7 +7,10 @@ set -eu -o pipefail
 function join { local IFS="$1"; shift; echo "$*"; }
 function lg { echo "$@" >&2; }
 
-toml="../../pyproject.toml"
+cd "$(dirname "$0")/../../"
+lg "Running in directory $(pwd)"
+
+toml="pyproject.toml"
 
 # Skip if no package updates
 if ! git diff --name-only HEAD | grep -qE '^scrivo/'; then
