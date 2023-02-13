@@ -14,13 +14,11 @@ toml="pyproject.toml"
 
 # Skip if no package updates
 if ! git diff --name-only HEAD | grep -qE '^scrivo/'; then
-    lg "No scrivo updates found. Exiting."
     exit
 fi
 
 # Skip if request no bump
 if [[ ${NOBUMP-0} -gt 0 ]]; then
-    lg "No bump requested. Exiting."
     exit
 fi
 
