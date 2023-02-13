@@ -4,26 +4,43 @@ import logging
 
 import click
 
+from scrivo import __version__
 from scrivo.compile import compile_site
-from scrivo.utils import get_package_version
 
 log = logging.getLogger(__name__)
+
 
 __all__ = ["present_cli"]
 
 
-@click.command(context_settings={"help_option_names": ("-h", "--help")})
+@click.command(
+    help="Compile a static blog or website.",
+    context_settings={"help_option_names": ("-h", "--help")},
+)
 @click.option(
     "--source",
     "-s",
     "source_dir",
+    metavar="DIR",
+    required=True,
     type=click.Path(exists=True, file_okay=False),
     help="Blog source directory.",
+)
+@click.option(
+    "--output",
+    "-o",
+    "output_dir",
+    metavar="DIR",
+    required=True,
+    type=click.Path(file_okay=False),
+    help="Blog destination directory.",
 )
 @click.option(
     "--templates",
     "-t",
     "template_dir",
+    metavar="DIR",
+    required=True,
     type=click.Path(exists=True, file_okay=False),
     help="Blog template directory.",
 )
@@ -31,16 +48,10 @@ __all__ = ["present_cli"]
     "--url",
     "-u",
     "site_url",
+    metavar="URL",
     type=str,
     required=True,
     help="Site root URL.",
-)
-@click.option(
-    "--output",
-    "-o",
-    "output_dir",
-    type=click.Path(file_okay=False),
-    help="Blog destination directory.",
 )
 @click.option(
     "--debug",
@@ -76,7 +87,7 @@ def present_cli(
 
     """
     if show_version:
-        print(f"Scrivo CLI, package version {get_package_version()}")
+        print(f"Scrivo CLI, package version {__version__}")
         return
 
     if debug:
@@ -89,7 +100,7 @@ def present_cli(
             raise ValueError(f"function argument {arg} cannot be missing")
 
     log.info(60 * "*")
-    log.info("**** Beginning scrivo CLI")
+    log.info(f"**** Beginning scrivo CLI, version {__version__}")
     log.info(60 * "*")
 
     log.info(f"{source_dir = }")

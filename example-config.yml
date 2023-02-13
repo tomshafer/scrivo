@@ -1,6 +1,0 @@
-# Example scrivo site configuration
-
-site:
-  url: "http://example.com"
-  source_dir: "~/Sites/Personal/source"
-  output_dir: "~/Sites/Personal/output"
