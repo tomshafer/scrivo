@@ -1,15 +1,24 @@
-"""Markdown with custom extensions."""
+"""Markdown with custom extensions.
+
+We run two parsers against each file:
+
+1. HTML parser, to generate the page output, and
+2. Plain text parser, to generate text for page similarities.
+
+"""
 
 import logging
 import re
-from typing import Any
+from typing import Any, NamedTuple
 
 import yaml
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from markdown_plain_text.extention import PlainTextExtension
 
-__all__ = ["md2html"]
+__all__ = ["parse_markdown"]
+
 
 log = logging.getLogger(__name__)
 
@@ -70,7 +79,7 @@ class YAMLExtension(Extension):
 # All docs share a parser, defined here ------------------------------
 
 
-_parser = MarkdownWithMetadata(
+_html_parser = MarkdownWithMetadata(
     output_format="html",
     tab_length=2,
     extensions=[
@@ -95,10 +104,28 @@ _parser = MarkdownWithMetadata(
     },
 )
 
+# Run YAML with PlainText to remove metadata from the tree
+_text_parser = MarkdownWithMetadata(
+    extensions=[
+        YAMLExtension(),
+        PlainTextExtension(),
+    ],
+)
 
-def md2html(source: str) -> tuple[str, dict[str, Any]]:
+
+class _Parsed(NamedTuple):
+    plaintext: str
+    html: str
+    metadata: dict[str, Any]
+
+
+def parse_markdown(source: str) -> _Parsed:
     """Parse a Markdown document into HTML and metadata."""
-    _parser.reset()  # Reset or we'll have leftover garbage from the previous file
-    html = _parser.convert(source)
-    meta: dict[str, Any] = _parser.metadata
-    return html, meta
+    # Reset or we'll have leftover garbage from the previous file
+    _html_parser.reset()
+    _text_parser.reset()
+    return _Parsed(
+        _text_parser.convert(source),
+        _html_parser.convert(source),
+        _html_parser.metadata,
+    )

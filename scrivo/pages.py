@@ -6,9 +6,9 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any
 
-from jinja2 import Environment, Template
+from jinja2 import Environment as Env, Template
 
-from scrivo.markdown import md2html
+from scrivo.markdown import parse_markdown
 
 log = logging.getLogger(__name__)
 
@@ -23,24 +23,18 @@ class page:
         """Read and render a Markdown file to HTML + metadata.
 
         Args:
-            srcpath (str): Path to the source Markdown file.
-            relpath (str): Path to the source file relative to root.
+            srcpath: Source Markdown file path on disk
+            relpath: Source file path relative to the webroot
 
         """
         self.srcpath = srcpath
         self.relpath = relpath
         with open(srcpath) as f:
             self.text = f.read()
-            self.html, meta = md2html(self.text)
-            self.meta = defaultdict(lambda: None, meta)
+            self.plain, self.html, _meta = parse_markdown(self.text)
+            self.meta = defaultdict(lambda: None, _meta)
 
     def __repr__(self) -> str:
-        """Represent a page object as a string.
-
-        Returns:
-            str: A page identifier.
-
-        """
         return f"<page({self.relpath})>"
 
     def render(self, tmpl: Template | None = None) -> str:
@@ -66,37 +60,30 @@ class page:
         return os.path.abspath(os.path.join(base, self.relpath_html))
 
 
-def render_pages(pages: list[page], dst: str, templates: Environment) -> list[str]:
+def render_pages(pages: list[page], dest: str, templates: Env) -> list[str]:
     """Render individual markdown pages into the destination.
 
     Args:
-        pages (list[page]): The list of pages to render.
-        dst (str): Destination directory, for path manipulation.
-        templates (Environment): Jinja template environment.
+        pages: Collection of pages to render
+        dst: Destination directory, for path manipulation
+        templates: Jinja template environment
 
     Returns:
-        list[str]: Relative paths of written HTML files.
+        Relative paths of written HTML files.
 
     """
     html_pages = []
     for page in pages:
         template = resolve_page_template(page, templates)
-        dest_html = page.destpath_html(dst)
+        dest_html = page.destpath_html(dest)
         with open(dest_html, "w") as outf:
             outf.write(page.render(template))
             html_pages.append(page.relpath_html)
     return html_pages
 
 
-def resolve_page_template(page: page, templates: Environment) -> Template:
+def resolve_page_template(page: page, templates: Env) -> Template:
     """Compute which template to apply to a page.
-
-    Args:
-        page (page): Page to be templated.
-        templates (Environment): A Jinja templating environment.
-
-    Returns:
-        Template: Resolved template for the page.
 
     If a 'template' is specified in a page's metadata then we
     take that as the truth and return the specified tempate.
@@ -112,6 +99,13 @@ def resolve_page_template(page: page, templates: Environment) -> Template:
         * work/physics.html
         * work/main.html
         * main.html
+
+    Args:
+        page: Page to be templated
+        templates: Jinja templating environment
+
+    Returns:
+        The resolved template for the page.
 
     """
     # Easy path: We've specified the template in metadata
@@ -137,9 +131,9 @@ def resolve_page_template(page: page, templates: Environment) -> Template:
             matched_template = test_path
             break
 
-        # Remove the trailing directory: "/<dir>". Returns -1 if none available.
-        slash_idx = base.rfind("/")
-        if slash_idx == -1:
+        # Remove the trailing directory: "/<dir>".
+        # Returns -1 if none available.
+        if slash_idx := base.rfind("/") == -1:
             break
         base = base[:slash_idx]
 
@@ -148,23 +142,10 @@ def resolve_page_template(page: page, templates: Environment) -> Template:
     return result
 
 
-def collect_blog_post_pages(
-    pages: list[page],
-    include_drafts: bool = False,
-) -> list[page]:
-    """Provide a list of blog posts only.
-
-    Args:
-        pages (list[page]): All pages tracked by the software.
-        include_drafts (bool): Whether to include draft posts.
-
-    Returns:
-        list[page]: FIltered list of posts.
-
-    """
+def collect_blog_post_pages(pages: list[page], drafts: bool = False) -> list[page]:
+    """Provide a list of blog posts from a page collection."""
     return [
         page
         for page in pages
-        if page.relpath.startswith("blog/")
-        and (include_drafts or not page.meta["draft"])
+        if page.relpath.startswith("blog/") and (drafts or not page.meta["draft"])
     ]

@@ -6,7 +6,7 @@ from collections import defaultdict
 from datetime import date
 from typing import Callable
 
-from jinja2 import Environment
+from jinja2 import Environment as Env
 
 from scrivo.pages import collect_blog_post_pages, page, render_pages
 from scrivo.utils import ensure_dir_exists
@@ -19,20 +19,16 @@ __all__ = ["REGISTRY"]
 # Rendering jobs -----------------------------------------------------
 
 
-def render_blog_index(
-    pages: list[page],
-    outdir: str,
-    templates: Environment,
-) -> list[str]:
+def render_blog_index(pages: list[page], outdir: str, templates: Env) -> list[str]:
     """Render blog/index.html.
 
     Args:
-        pages (list[page]): All pages known to the blogging engine.
-        outdir (str): Output root directory.
-        templates (Environment): Jinja templating environment.
+        pages: All pages known to the blogging engine
+        outdir: Output root directory
+        templates: Jinja templating environment
 
     Returns:
-        list[str]: List of (relative paths for) pages generated.
+        List of (relative paths for) generated pages.
 
     """
     target = "blog/index.html"
@@ -45,20 +41,16 @@ def render_blog_index(
     return [target]
 
 
-def render_archive(
-    pages: list[page],
-    outdir: str,
-    templates: Environment,
-) -> list[str]:
+def render_archive(pages: list[page], outdir: str, templates: Env) -> list[str]:
     """Render main, year, and year/month blog archives.
 
     Args:
-        pages (list[page]): All pages known to the blogging engine.
-        outdir (str): Output root directory.
-        templates (Environment): Jinja templating environment.
+        pages: All pages known to the blogging engine
+        outdir: Output root directory
+        templates: Jinja templating environment
 
     Returns:
-        list[str]: List of (relative paths for) pages generated.
+        List of (relative paths for) generated pages.
 
     """
     rendered_pages = []
@@ -106,20 +98,16 @@ def render_archive(
     return rendered_pages
 
 
-def render_blog_tag_pages(
-    pages: list[page],
-    outdir: str,
-    templates: Environment,
-) -> list[str]:
+def render_blog_tag_pages(pages: list[page], outdir: str, templates: Env) -> list[str]:
     """Render blog/tags/index.html.
 
     Args:
-        pages (list[page]): All pages known to the blogging engine.
-        outdir (str): Output root directory.
-        templates (Environment): Jinja templating environment.
+        pages: All pages known to the blogging engine
+        outdir: Output root directory
+        templates: Jinja templating environment
 
     Returns:
-        list[str]: List of (relative paths for) pages generated.
+        List of (relative paths for) generated pages.
 
     """
     posts = collect_blog_post_pages(pages)
@@ -141,25 +129,22 @@ def render_blog_tag_pages(
     return [target]
 
 
-def render_json_feed(
-    pages: list[page],
-    outdir: str,
-    templates: Environment,
-) -> list[str]:
+def render_json_feed(pages: list[page], outdir: str, templates: Env) -> list[str]:
     """Render JSON feed.
 
     Args:
-        pages (list[page]): All pages known to the blogging engine.
-        outdir (str): Output root directory.
-        templates (Environment): Jinja templating environment.
+        pages: All pages known to the blogging engine
+        outdir: Output root directory
+        templates: Jinja templating environment
 
     Returns:
-        list[str]: List of (relative paths for) pages generated.
+        List of (relative paths for) generated pages.
 
     """
     template = templates.get_template("feeds/feed.json")
     posts = collect_blog_post_pages(pages)
     ensure_dir_exists(os.path.join(outdir, "blog"))
+
     target = "blog/feed.json"
     log.info(f"Rendering {target}")
     with open(os.path.join(outdir, target), "w") as outf:
@@ -168,20 +153,16 @@ def render_json_feed(
     return [target]
 
 
-def render_xml_feeds(
-    pages: list[page],
-    outdir: str,
-    templates: Environment,
-) -> list[str]:
+def render_xml_feeds(pages: list[page], outdir: str, templates: Env) -> list[str]:
     """Render RSS feeds.
 
     Args:
-        pages (list[page]): All pages known to the blogging engine.
-        outdir (str): Output root directory.
-        templates (Environment): Jinja templating environment.
+        pages: All pages known to the blogging engine
+        outdir: Output root directory
+        templates: Jinja templating environment
 
     Returns:
-        list[str]: List of (relative paths for) pages generated.
+        List of (relative paths for) generated pages.
 
     """
     rendered_pages = []
@@ -189,6 +170,7 @@ def render_xml_feeds(
     feeds = ["rss.xml", "rss-r.xml"]
     posts = collect_blog_post_pages(pages)
     ensure_dir_exists(os.path.join(outdir, "blog"))
+
     for feed in feeds:
         template = templates.get_template(f"feeds/{feed}")
         target = f"blog/{feed}"
@@ -204,7 +186,7 @@ def render_xml_feeds(
 
 
 # The registry tracks the various jobs needed to build the blog
-REGISTRY: dict[str, Callable[[list[page], str, Environment], list[str]]] = {}
+REGISTRY: dict[str, Callable[[list[page], str, Env], list[str]]] = {}
 
 REGISTRY["Individual pages"] = render_pages
 REGISTRY["Blog index"] = render_blog_index
