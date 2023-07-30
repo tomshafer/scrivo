@@ -28,6 +28,7 @@ _md_parser = Markdown(
         "markdown.extensions.codehilite",
         "markdown.extensions.smarty",
         "markdown.extensions.toc",
+        "markdown.extensions.md_in_html",
         "mdx_math",
         YAMLMetadataExtension(),
     ],
@@ -73,6 +74,7 @@ def set_metadata(raw_meta: Dict) -> Dict[str, Any]:
 
       - title
       - date
+      - modified
       - tags
       - template
       - draft
@@ -96,6 +98,7 @@ def set_metadata(raw_meta: Dict) -> Dict[str, Any]:
             default=None,
             fn=parse_date,
         ),
+        "modified": get_default(raw_meta, "modified", None, parse_date),
         "tags": get_default(raw_meta, "tags", ["miscellaneous"]),
         "template": get_default(raw_meta, "template", None),
         "draft": get_default(raw_meta, "draft", False, bool),
