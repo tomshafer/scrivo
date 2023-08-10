@@ -5,6 +5,7 @@ import os
 import time
 from datetime import datetime
 from typing import Iterable, List
+import shutil
 
 from jinja2 import Environment
 
@@ -115,7 +116,7 @@ def symlink_directory(
                 if not os.path.islink(dest_link):
                     logger.warning("path %s exists but isn't a link", dest_link)
                 continue
-            os.symlink(src_link, dest_link)
+            shutil.copy2(src_link, dest_link)
 
 
 @logtime
