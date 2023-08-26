@@ -112,10 +112,6 @@ def symlink_directory(
         for f in files:
             src_link = os.path.abspath(os.path.join(pwd, f))
             dest_link = os.path.abspath(os.path.join(dest_dir, f))
-            if os.path.exists(dest_link):
-                if not os.path.islink(dest_link):
-                    logger.warning("path %s exists but isn't a link", dest_link)
-                continue
             shutil.copy2(src_link, dest_link)
 
 
@@ -260,17 +256,19 @@ def compile_site(
     logger.info("Rendered tags pages in %.03f s", time.time() - timer_start)
 
     # JSON feed
+    feed_posts = [p for p in blogs if p.meta.get("feed", True)]
+
     timer_start = time.time()
     with open(os.path.join(config.site.build_dir, "blog", "feed.json"), "w") as f:
         template = templates.get_template(config.templates.feeds.json)
-        f.write(template.render(posts=blogs))
+        f.write(template.render(posts=feed_posts))
 
     # RSS feeds
     with open(os.path.join(config.site.build_dir, "blog", "rss.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss)
-        f.write(template.render(posts=blogs, build_date=datetime.now()))
+        f.write(template.render(posts=feed_posts, build_date=datetime.now()))
 
-    rp = (b for b in blogs if "r-programming" in b.meta["tags"])
+    rp = (b for b in feed_posts if "r-programming" in b.meta["tags"])
     with open(os.path.join(config.site.build_dir, "blog", "rss-r.xml"), "w") as f:
         template = templates.get_template(config.templates.feeds.rss_r)
         f.write(template.render(posts=rp, build_date=datetime.now()))
