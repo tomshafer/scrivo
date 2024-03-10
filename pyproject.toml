@@ -24,6 +24,9 @@ types-tqdm = "^4.64.7.12"
 ruff = "^0.3.2"
 pytest = "^8.1.1"
 
+[tool.mypy]
+ignore_missing_imports = true
+
 [tool.ruff]
 line-length = 88
 indent-width = 4
