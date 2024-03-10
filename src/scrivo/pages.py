@@ -64,7 +64,7 @@ def render_pages(pages: list[page], dest: str, templates: Env) -> list[str]:
 
     Args:
         pages: Collection of pages to render
-        dst: Destination directory, for path manipulation
+        dest: Destination directory, for path manipulation
         templates: Jinja template environment
 
     Returns:
@@ -73,7 +73,7 @@ def render_pages(pages: list[page], dest: str, templates: Env) -> list[str]:
     """
     html_pages = []
     for page in pages:
-        log.info(f"Rendering {page.relpath_html}")
+        log.info("Rendering %s", page.relpath_html)
         template = resolve_page_template(page, templates)
         dest_html = page.destpath_html(dest)
         with open(dest_html, "w") as outf:
@@ -138,7 +138,7 @@ def resolve_page_template(page: page, templates: Env) -> Template:
         base = base[:slash_idx]
 
     result = templates.get_template(matched_template)
-    log.debug(f"Mapped {page} => {result}")
+    log.debug("Mapped %s => %s", page, result)
     return result
 
 

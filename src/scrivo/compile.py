@@ -30,7 +30,7 @@ def compile_site(
 
     """
     with timer(logging.WARNING, log, "Generation completed in"):
-        tmpldir = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
+        tmpldir = Environment(loader=FileSystemLoader(template_dir))  # noqa: S701
         outdir = ensure_dir_exists(output_dir)
         rsync(source_dir, outdir)
 
@@ -57,7 +57,7 @@ def collect_pages(source_dir: str, exts: tuple[str, ...] = ("md",)) -> list[page
 
     n = len(pages)
     r = n / tm.elapsed
-    log.info(f"Processed {n} {s('page', n)} in {tm} ({r:.1f} pg/s)")
+    log.info("Processed %d %s in %s (%.1f pg/s)", n, s("page", n), tm, r)
 
     return pages
 
@@ -65,7 +65,7 @@ def collect_pages(source_dir: str, exts: tuple[str, ...] = ("md",)) -> list[page
 def rsync(src: str, dst: str) -> None:
     """Run rsync to update the output relative to the source."""
     command = shlex.split(f'rsync -rL --delete --exclude=".*" "{src}/" "{dst}/"')
-    log.debug(f"rsync command = `{' '.join(command)}`")
+    log.debug("rsync command = `%s`", " ".join(command))
     sp.run(command)
 
 

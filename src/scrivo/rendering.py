@@ -30,7 +30,7 @@ def render_blog_index(pages: list[page], outdir: str, templates: Env) -> list[st
 
     """
     target = "blog/index.html"
-    log.info(f"Rendering {target}")
+    log.info("Rendering %s", target)
 
     template = templates.get_template(target)
     with open(os.path.join(outdir, target), "w") as outf:
@@ -73,7 +73,7 @@ def render_archive(pages: list[page], outdir: str, templates: Env) -> list[str]:
         subset = [p for p in blog_posts if p.date.year == year]
         ensure_dir_exists(os.path.join(outdir, f"blog/{year}"))
         target = f"blog/{year}/index.html"
-        log.info(f"Rendering {target}")
+        log.info("Rendering %s", target)
         with open(os.path.join(outdir, target), "w") as outf:
             outf.write(template.render(posts=subset))
             rendered_pages += [target]
@@ -87,7 +87,7 @@ def render_archive(pages: list[page], outdir: str, templates: Env) -> list[str]:
             if page.date.year == year and page.date.month == month
         ]
         target = f"blog/{year}/{month:02d}/index.html"
-        log.info(f"Rendering {target}")
+        log.info("Rendering %s", target)
         ensure_dir_exists(os.path.join(outdir, os.path.dirname(target)))
         with open(os.path.join(outdir, target), "w") as outf:
             outf.write(template.render(posts=subset))
@@ -119,7 +119,7 @@ def render_blog_tag_pages(pages: list[page], outdir: str, templates: Env) -> lis
             tagged_posts[tag].append(post)
 
     target = "blog/tags/index.html"
-    log.info(f"Rendering {target}")
+    log.info("Rendering %s", target)
     ensure_dir_exists(os.path.join(outdir, os.path.dirname(target)))
     with open(os.path.join(outdir, target), "w") as outf:
         outf.write(template.render(posts=posts))
@@ -144,7 +144,7 @@ def render_json_feed(pages: list[page], outdir: str, templates: Env) -> list[str
     ensure_dir_exists(os.path.join(outdir, "blog"))
 
     target = "blog/feed.json"
-    log.info(f"Rendering {target}")
+    log.info("Rendering %s", target)
     with open(os.path.join(outdir, target), "w") as outf:
         outf.write(template.render(posts=posts))
 
@@ -172,7 +172,7 @@ def render_xml_feeds(pages: list[page], outdir: str, templates: Env) -> list[str
     for feed in feeds:
         template = templates.get_template(f"feeds/{feed}")
         target = f"blog/{feed}"
-        log.info(f"Rendering {target}")
+        log.info("Rendering %s", target)
         with open(os.path.join(outdir, target), "w") as outf:
             outf.write(template.render(posts=posts))
             rendered_pages += [target]

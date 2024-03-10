@@ -39,7 +39,7 @@ def ensure_dir_exists(dirpath: str) -> str:
     """Create a directory if it doesn't already exist."""
     absdir = os.path.abspath(dirpath)
     if not os.path.exists(absdir):
-        log.debug(f"Creating directory {absdir}")
+        log.debug("Creating directory %s", absdir)
         os.mkdir(absdir)
     return absdir
 
@@ -68,7 +68,7 @@ class timer:
         self.end = time.perf_counter()
         self.elapsed = self.end - self.start
         if not self._silent:
-            self._logger.log(self._level, f"{self._msg} {self}")
+            self._logger.log(self._level, "%s %s", self._msg, self)
 
     def __str__(self) -> str:
         return f"{self.elapsed:.3f} s"
