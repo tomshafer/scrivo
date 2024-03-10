@@ -4,12 +4,10 @@ import logging
 import os
 from collections import defaultdict
 from datetime import date
-from typing import Callable
-
 from jinja2 import Environment as Env
-
 from scrivo.pages import collect_blog_post_pages, page, render_pages
 from scrivo.utils import ensure_dir_exists
+from typing import Callable
 
 log = logging.getLogger(__name__)
 

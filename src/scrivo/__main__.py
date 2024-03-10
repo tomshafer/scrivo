@@ -1,9 +1,7 @@
 """Present a command-line interface for the package."""
 
-import logging
-
 import click
-
+import logging
 from scrivo import __version__
 from scrivo.compile import compile_site
 

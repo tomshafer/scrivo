@@ -4,11 +4,10 @@ import logging
 import os
 from collections import defaultdict
 from datetime import datetime
-from typing import Any
-
-from jinja2 import Environment as Env, Template
-
+from jinja2 import Environment as Env
+from jinja2 import Template
 from scrivo.markdown import parse_markdown
+from typing import Any
 
 log = logging.getLogger(__name__)
 

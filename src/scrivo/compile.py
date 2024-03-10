@@ -5,10 +5,8 @@ import os
 import shlex
 import subprocess as sp
 from functools import reduce
-from operator import add
-
 from jinja2 import Environment, FileSystemLoader
-
+from operator import add
 from scrivo.pages import page
 from scrivo.rendering import REGISTRY
 from scrivo.utils import ensure_dir_exists, s, timer
@@ -32,7 +30,7 @@ def compile_site(
 
     """
     with timer(logging.WARNING, log, "Generation completed in"):
-        tmpldir = Environment(loader=FileSystemLoader(template_dir))
+        tmpldir = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
         outdir = ensure_dir_exists(output_dir)
         rsync(source_dir, outdir)
 
@@ -95,4 +93,4 @@ def write_sitemap(urls: list[str], basedir: str, webroot: str) -> None:
             sitemap_urls += [f"{webroot.rstrip('/')}/{clean_url}"]
 
     with open(os.path.join(basedir, "sitemap.txt"), "w") as f:
-        f.writelines(map(lambda u: u + "\n", sorted(sitemap_urls)))
+        f.writelines(u + "\n" for u in sorted(sitemap_urls))

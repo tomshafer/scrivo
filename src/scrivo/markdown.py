@@ -9,13 +9,12 @@ We run two parsers against each file:
 
 import logging
 import re
-from typing import Any, NamedTuple
-
 import yaml
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from markdown_plain_text.extention import PlainTextExtension
+from typing import Any, NamedTuple
 
 __all__ = ["parse_markdown"]
 
@@ -66,7 +65,7 @@ class YAMLPreprocessor(Preprocessor):
 
         # lowercase the keys
         # setattr() gets around typing issues with .metadata
-        setattr(self.md, "metadata", {k.lower(): v for k, v in metadata.items()})
+        setattr(self.md, "metadata", {k.lower(): v for k, v in metadata.items()})  # noqa: B010
         return new_lines
 
 
