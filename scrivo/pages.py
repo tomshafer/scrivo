@@ -74,6 +74,7 @@ def render_pages(pages: list[page], dest: str, templates: Env) -> list[str]:
     """
     html_pages = []
     for page in pages:
+        log.info(f"Rendering {page.relpath_html}")
         template = resolve_page_template(page, templates)
         dest_html = page.destpath_html(dest)
         with open(dest_html, "w") as outf:

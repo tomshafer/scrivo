@@ -15,17 +15,12 @@ python-markdown-math = "^0.8"
 plain-text-markdown-extention = {git = "https://github.com/kostyachum/python-markdown-plain-text.git"}
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0"
-flake8 = "^6.0.0"
-isort = "^5.12.0"
 mypy = "^1.0.0"
 pyinstrument = "^4.4.0"
 types-markdown = "^3.4.2.3"
 types-pyyaml = "^6.0.12.5"
 types-tqdm = "^4.64.7.12"
-
-[tool.isort]
-profile = "black"
+ruff = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core"]
