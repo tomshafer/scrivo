@@ -1,8 +1,7 @@
 __pycache__
 .DS_Store
 .mypy_cache
+.pytest_cache
 .vscode
 *.egg-info
-output
-templates
-venv
+dev

@@ -22,6 +22,7 @@ types-markdown = "^3.4.2.3"
 types-pyyaml = "^6.0.12.5"
 types-tqdm = "^4.64.7.12"
 ruff = "^0.3.2"
+pytest = "^8.1.1"
 
 [build-system]
 requires = ["poetry-core"]
