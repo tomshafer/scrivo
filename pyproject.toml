@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "scrivo"
-version = "0.1.0"
+version = "2024.3.9"
 description = "A static website generator."
 authors = ["Tom Shafer <tom@tshafer.com>"]
 license = "MIT"
