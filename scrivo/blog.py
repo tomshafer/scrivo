@@ -9,7 +9,7 @@ To consider:
 - Sentiment analysis
 
 """
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from datetime import datetime
 from typing import DefaultDict, Iterable, List, Optional
 

@@ -13,7 +13,7 @@ from scrivo.blog import render_archives_page, render_tags_page
 from scrivo.config import Config
 from scrivo.ml import page_similarities
 from scrivo.page import Page, load_templates_from_dir
-from scrivo.utils import get_tz, logtime
+from scrivo.utils import logtime
 
 __all__ = [
     "increment_counter",
