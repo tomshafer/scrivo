@@ -1,4 +1,5 @@
 """Compile a static site from Markdown files."""
+
 import copy
 import logging
 import os
@@ -270,7 +271,13 @@ def compile_site(
 
     rp = (b for b in feed_posts if "r-programming" in b.meta["tags"])
     with open(os.path.join(config.site.build_dir, "blog", "rss-r.xml"), "w") as f:
-        template = templates.get_template(config.templates.feeds.rss_r)
+        template = templates.get_template(config.templates.feeds.rss_tag)
+        f.write(template.render(posts=rp, build_date=datetime.now()))
+    logger.info("Rendered feeds in %.03f s", time.time() - timer_start)
+
+    rp = (b for b in feed_posts if "python-programming" in b.meta["tags"])
+    with open(os.path.join(config.site.build_dir, "blog", "rss-python.xml"), "w") as f:
+        template = templates.get_template(config.templates.feeds.rss_tag)
         f.write(template.render(posts=rp, build_date=datetime.now()))
     logger.info("Rendered feeds in %.03f s", time.time() - timer_start)
 

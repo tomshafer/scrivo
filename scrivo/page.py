@@ -2,6 +2,7 @@
 
 Pages originate in Markdown and are to be rendered as HTML.
 """
+
 import json
 import os
 from datetime import datetime
@@ -160,6 +161,20 @@ class Page:
 
         # Parse the source to HTML and metadata
         self.html, self.meta = parse_markdown(self.source)
+
+        # Hack to add text for R and Python
+        if "r-programming" in self.meta.get("tags", []):
+            self.html += (
+                "\n\n<hr>\n\n"
+                "<p><i>This post and others like it are kindly republished by "
+                '<a href="https://www.r-bloggers.com/">R-bloggers</a>.</i></p>\n'
+            )
+        if "python-programming" in self.meta.get("tags", []):
+            self.html += (
+                "\n\n<hr>\n\n"
+                "<p><i>This post and others like it are kindly republished by "
+                '<a href="https://www.python-bloggers.com/">Python-bloggers</a>.</i></p>\n'
+            )
 
         # Allow for related pages
         self.related_pages: Dict[float, Page] = {}

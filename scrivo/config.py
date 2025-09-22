@@ -30,7 +30,7 @@ class FeedTemplatesConfig(NamedTuple):
     """Templates YAML sub-configuration options for feeds."""
 
     rss: str
-    rss_r: str
+    rss_tag: str
     json: str
 
 
@@ -76,7 +76,7 @@ def read_config(path: str) -> Config:
             ),
             feeds=FeedTemplatesConfig(
                 rss=yaml["templates"]["feeds"]["rss"],
-                rss_r=yaml["templates"]["feeds"]["rss_r"],
+                rss_tag=yaml["templates"]["feeds"]["rss_tag"],
                 json=yaml["templates"]["feeds"]["json"],
             ),
         ),

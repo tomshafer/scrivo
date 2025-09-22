@@ -1,6 +1,6 @@
 [project]
 name = "scrivo"
-version = "0.0.3.1"
+version = "0.0.4"
 description = "My personal website generator"
 readme = "README.md"
 authors = [{ name = "Tom Shafer", email = "tom@tshafer.com" }]
